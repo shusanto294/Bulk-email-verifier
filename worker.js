@@ -11,7 +11,7 @@ mongoose.connect(process.env.MONGODB_URI)
 async function verifyEmailBatch() {
     try {
         // Find up to 100 pending emails at a time
-        const emails = await Email.find({ status: 'pending' }).limit(100);
+        const emails = await Email.find({ status: 'pending' }).limit(1);
         
         if (emails.length === 0) {
             console.log('No pending emails found. Waiting for new emails...');
@@ -26,11 +26,20 @@ async function verifyEmailBatch() {
             try {
                 console.log(`Verifying email: ${email.email}`);
                 
-                const result = await new Promise((resolve) => {
-                    emailExistence.check(email.email, (error, exists) => {
-                        resolve({ error, exists });
-                    });
-                });
+                // Add 5-second timeout for verification
+                const result = await Promise.race([
+                    new Promise((resolve) => {
+                        emailExistence.check(email.email, (error, exists) => {
+                            resolve({ error, exists });
+                        });
+                    }),
+                    new Promise((resolve) => 
+                        setTimeout(() => resolve({ 
+                            error: new Error('Verification timeout (5s)'),
+                            exists: false 
+                        }), 5000)
+                    )
+                ]);
 
                 if (result.error) {
                     console.error(`Error verifying ${email.email}:`, result.error);

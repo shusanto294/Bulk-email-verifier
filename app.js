@@ -29,8 +29,8 @@ app.get('/', (req, res) => {
     res.redirect('/upload');
 });
 
-// Find available port starting from 3000
-const PORT = process.env.PORT || 3000;
+// Find available port starting from 3001
+const PORT = process.env.PORT || 3001;
 const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

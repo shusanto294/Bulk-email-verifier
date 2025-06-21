@@ -83,13 +83,31 @@ router.post('/:id/complete', async (req, res) => {
 // Get upload details
 router.get('/:id', async (req, res) => {
     try {
-        const upload = await Upload.findById(req.params.id);
-        const emails = await Email.find({ uploadId: upload._id });
+        const perPage = 50;
+        const page = req.query.page || 1;
         
-        // Ensure we have valid counts even if emails array is empty
-        const verifiedCount = emails.filter(e => e.status === 'verified').length;
-        const invalidCount = emails.filter(e => e.status === 'invalid').length;
-        const pendingCount = emails.filter(e => e.status === 'pending').length;
+        const upload = await Upload.findById(req.params.id);
+        const totalEmails = await Email.countDocuments({ uploadId: upload._id });
+        
+        // Get counts from ALL emails, not just current page
+        const verifiedCount = await Email.countDocuments({ 
+            uploadId: upload._id, 
+            status: 'verified' 
+        });
+        const invalidCount = await Email.countDocuments({ 
+            uploadId: upload._id, 
+            status: 'invalid' 
+        });
+        const pendingCount = await Email.countDocuments({ 
+            uploadId: upload._id, 
+            status: 'pending' 
+        });
+
+        // Only paginate the email list display
+        const emails = await Email.find({ uploadId: upload._id })
+            .skip((perPage * page) - perPage)
+            .limit(perPage)
+            .sort({ createdAt: -1 });
         
         const stats = {
             total: emails.length || 0,
@@ -98,7 +116,55 @@ router.get('/:id', async (req, res) => {
             pending: pendingCount || 0
         };
 
-        res.render('upload-details', { upload, emails, stats });
+        res.render('upload-details', { 
+            upload, 
+            emails, 
+            stats,
+            page,
+            totalEmails,
+            pages: Math.ceil(totalEmails / perPage)
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+
+// Download CSV routes
+router.get('/:id/download/:type', async (req, res) => {
+    try {
+        const { id, type } = req.params;
+        const validTypes = ['all', 'verified', 'invalid', 'pending'];
+        
+        if (!validTypes.includes(type)) {
+            return res.status(400).send('Invalid download type');
+        }
+
+        const upload = await Upload.findById(id);
+        if (!upload) {
+            return res.status(404).send('Upload not found');
+        }
+
+        let query = { uploadId: id };
+        if (type !== 'all') {
+            query.status = type;
+        }
+
+        const emails = await Email.find(query).select('email status verifiedAt -_id');
+        
+        // Generate CSV
+        const header = 'Email,Status,Verified At\n';
+        const csvData = emails.map(email => 
+            `"${email.email}","${email.status}","${email.verifiedAt || ''}"`
+        ).join('\n');
+        
+        const csv = header + csvData;
+        
+        // Set response headers
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename=${upload.filename}-${type}.csv`);
+        
+        res.send(csv);
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');

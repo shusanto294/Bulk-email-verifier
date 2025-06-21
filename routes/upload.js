@@ -29,7 +29,38 @@ const upload = multer({ storage: storage });
 router.get('/', async (req, res) => {
     try {
         const uploads = await Upload.find().sort({ createdAt: -1 });
-        res.render('upload', { uploads });
+        
+        // Enhanced status checking with verification of all email states
+        const uploadsWithStatus = await Promise.all(uploads.map(async (upload) => {
+            const [pendingCount, totalCount] = await Promise.all([
+                Email.countDocuments({ 
+                    uploadId: upload._id,
+                    status: 'pending'
+                }),
+                Email.countDocuments({
+                    uploadId: upload._id
+                })
+            ]);
+
+            // More accurate status determination
+            let displayStatus = 'Pending';
+            if (totalCount === 0) {
+                displayStatus = 'Empty';
+            } else if (pendingCount === 0) {
+                displayStatus = 'Processed';
+            }
+
+            console.log(`Status check for upload ${upload._id}: ${pendingCount} pending, ${totalCount} total`);
+
+            return {
+                ...upload.toObject(),
+                displayStatus,
+                pendingCount,
+                totalCount
+            };
+        }));
+        
+        res.render('upload', { uploads: uploadsWithStatus });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');

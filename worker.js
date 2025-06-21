@@ -53,6 +53,7 @@ async function verifyEmailBatch() {
                 }
 
                 await email.save();
+                console.log(`Updated email ${email.email} to status: ${email.status}`);
             } catch (err) {
                 console.error(`Error processing email ${email.email}:`, err);
             }

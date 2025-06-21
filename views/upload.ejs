@@ -12,9 +12,27 @@
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
         th { background-color: #f2f2f2; }
         .status-badge { padding: 5px 10px; border-radius: 3px; font-size: 12px; }
-        .pending { background: #fff3cd; color: #856404; }
-        .verified { background: #d4edda; color: #155724; }
-        .invalid { background: #f8d7da; color: #721c24; }
+        .pending { 
+            background: #fff3cd; 
+            color: #856404;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .verified { 
+            background: #d4edda; 
+            color: #155724;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .invalid { 
+            background: #e2e3e5; 
+            color: #383d41;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
         .progress-container { margin-top: 10px; display: none; }
         .progress-bar { height: 20px; background: #e0e0e0; border-radius: 10px; overflow: hidden; }
         .progress { height: 100%; background: #4CAF50; width: 0%; transition: width 0.3s; }
@@ -56,11 +74,24 @@
                         <tr>
                             <td><%= upload.filename %></td>
                             <td><%= upload.createdAt.toLocaleString() %></td>
-                            <td><%= upload.emailCount %></td>
+                            <td><%= upload.totalCount || 0 %></td>
                             <td>
-                                <span class="status-badge <%= upload.processed ? 'verified' : 'pending' %>">
-                                    <%= upload.processed ? 'Processed' : 'Pending' %>
-                                </span>
+                                <% if (upload.displayStatus === 'Pending') { %>
+                                    <span class="status-badge pending" title="<%= upload.pendingCount %> pending">
+                                        <%= upload.displayStatus %>
+                                        <% if (upload.pendingCount > 0) { %>
+                                            <span>(<%= upload.pendingCount %>)</span>
+                                        <% } %>
+                                    </span>
+                                <% } else if (upload.displayStatus === 'Processed') { %>
+                                    <span class="status-badge verified" title="All emails processed">
+                                        <%= upload.displayStatus %>
+                                    </span>
+                                <% } else { %>
+                                    <span class="status-badge invalid" title="No emails found">
+                                        <%= upload.displayStatus %>
+                                    </span>
+                                <% } %>
                             </td>
                             <td>
                                 <a href="/upload/<%= upload._id %>">View Details</a>

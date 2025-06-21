@@ -7,7 +7,7 @@ const uploadRoutes = require('./routes/upload');
 const app = express();
 
 // MongoDB connection
-mongoose.connect('mongodb+srv://shusanto:apple727354@cluster0.uokbi.mongodb.net/email_verifier?retryWrites=true&w=majority')
+mongoose.connect(process.env.MONGODB_URI)
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('MongoDB connection error:', err));
 

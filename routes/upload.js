@@ -82,7 +82,49 @@ router.post('/upload-file', upload.single('csvFile'), async (req, res) => {
         });
 
         const upload = await newUpload.save();
-        res.json(upload);
+        
+        // Process the CSV file
+        const emails = [];
+        fs.createReadStream(req.file.path)
+            .pipe(csv())
+            .on('data', (row) => {
+                // Extract email from either 'mail' or 'email' column (case insensitive)
+                const emailKey = Object.keys(row).find(key => 
+                    key.toLowerCase() === 'mail' || key.toLowerCase() === 'email'
+                );
+                const email = emailKey ? row[emailKey] : null;
+                
+                if (!email) return; // Skip if no email found
+                
+                // Create email data object
+                const emailData = {
+                    email: email.trim().toLowerCase(),
+                    uploadId: upload._id,
+                    csvData: {}
+                };
+
+                // Add all other columns to csvData
+                for (const [key, value] of Object.entries(row)) {
+                    const lowerKey = key.toLowerCase();
+                    if (lowerKey !== 'mail' && lowerKey !== 'email') {
+                        emailData.csvData[key] = value === '' ? null : value;
+                    }
+                }
+
+                emails.push(emailData);
+            })
+            .on('end', async () => {
+                try {
+                    // Insert all emails in bulk
+                    if (emails.length > 0) {
+                        await Email.insertMany(emails);
+                    }
+                    res.json(upload);
+                } catch (err) {
+                    console.error('Error saving emails:', err);
+                    res.status(500).json({ error: 'Error saving emails' });
+                }
+            });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server Error' });
@@ -181,18 +223,43 @@ router.get('/:id/download/:type', async (req, res) => {
             query.status = type;
         }
 
-        const emails = await Email.find(query).select('email status verifiedAt -_id');
+        const emails = await Email.find(query).select('email status verifiedAt csvData -_id');
         
-        // Generate CSV
-        const header = 'Email,Status,Verified At\n';
-        const csvData = emails.map(email => 
-            `"${email.email}","${email.status}","${email.verifiedAt || ''}"`
+        // Generate CSV - include all csvData fields
+        let headers = new Set(['Email', 'Status', 'Verified At']);
+        const rows = emails.map(email => {
+            const row = {
+                'Email': email.email,
+                'Status': email.status,
+                'Verified At': email.verifiedAt || ''
+            };
+            
+            // Add all csvData fields and collect headers
+            if (email.csvData) {
+                Object.entries(email.csvData).forEach(([key, value]) => {
+                    headers.add(key);
+                    row[key] = value;
+                });
+            }
+            return row;
+        });
+
+        // Convert to CSV
+        const headerRow = Array.from(headers).join(',') + '\n';
+        const csvData = rows.map(row => 
+            Array.from(headers).map(header => 
+                `"${row[header] !== undefined ? row[header] : ''}"`
+            ).join(',')
         ).join('\n');
         
-        const csv = header + csvData;
+        const csvContent = headerRow + csvData;
         
-        // Set response headers
-        res.setHeader('Content-Type', 'text/csv');
+        // Set response headers before sending
+        res.set('Content-Type', 'text/csv');
+        res.set('Content-Disposition', `attachment; filename=${upload.filename}-${type}.csv`);
+        
+        // Send the CSV content
+        return res.send(csvContent);
         res.setHeader('Content-Disposition', `attachment; filename=${upload.filename}-${type}.csv`);
         
         res.send(csv);

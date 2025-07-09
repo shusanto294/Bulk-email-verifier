@@ -24,9 +24,14 @@ const emailSchema = new mongoose.Schema({
     verificationDetails: {
         type: Object,
         default: null
+    },
+    csvData: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    strict: false  // This allows storing dynamic fields
 });
 
 // Index for faster queries

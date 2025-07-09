@@ -120,90 +120,33 @@
             progressBar.style.width = '0%';
             progressText.textContent = 'Processing: 0%';
 
-            // Upload file to server
-            const formData = new FormData();
-            formData.append('csvFile', file);
-            
-            const uploadResponse = await fetch('/upload/upload-file', {
-                method: 'POST',
-                body: formData
-            });
+            try {
+                // Upload file to server
+                const formData = new FormData();
+                formData.append('csvFile', file);
+                
+                const uploadResponse = await fetch('/upload/upload-file', {
+                    method: 'POST',
+                    body: formData
+                });
 
-            const upload = await uploadResponse.json();
-            if (!upload._id) {
-                alert('Error creating upload record');
-                return;
-            }
-
-            // Process CSV in chunks
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                try {
-                    const text = event.target.result;
-                    const lines = text.split('\n').filter(line => line.trim());
-                    if (lines.length < 2) {
-                        throw new Error('CSV file is empty or has no data rows');
-                    }
-
-                    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-                    const emailIndex = headers.findIndex(h => h === 'email');
-                    
-                    if (emailIndex === -1) {
-                        throw new Error('CSV must contain an "email" column');
-                    }
-
-                    // Validate at least one email exists
-                    const hasEmails = lines.slice(1).some(line => {
-                        const values = line.split(',');
-                        return values[emailIndex] && values[emailIndex].trim();
-                    });
-                    if (!hasEmails) {
-                        throw new Error('No email addresses found in CSV file');
-                    }
-
-                const batchSize = 500;
-                const totalEmails = lines.length - 1;
-                let processed = 0;
-
-                for (let i = 1; i < lines.length; i += batchSize) {
-                    const batch = lines.slice(i, i + batchSize);
-                    const emails = batch.map(line => {
-                        const values = line.split(',');
-                        return values[emailIndex].trim();
-                    }).filter(email => email);
-
-                    try {
-                        await fetch(`/api/uploads/${upload._id}/emails`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ emails })
-                        });
-
-                        processed += emails.length;
-                        const progress = Math.round((processed / totalEmails) * 100);
-                        progressBar.style.width = `${progress}%`;
-                        progressText.textContent = `Processing: ${progress}% (${processed}/${totalEmails} emails)`;
-                    } catch (err) {
-                        console.error(err);
-                        alert('Error processing batch');
-                        return;
-                    }
+                const upload = await uploadResponse.json();
+                if (!upload._id) {
+                    throw new Error('Error creating upload record');
                 }
 
+                progressBar.style.width = '100%';
+                progressText.textContent = 'Processing complete! Page will refresh...';
+                
                 // Mark upload as complete
                 await fetch(`/upload/${upload._id}/complete`, { method: 'POST' });
-                progressText.textContent = 'Processing complete! Page will refresh...';
                 setTimeout(() => location.reload(), 2000);
+                
             } catch (err) {
                 console.error(err);
                 progressText.textContent = `Error: ${err.message}`;
                 progressBar.style.backgroundColor = '#f44336';
             }
-            };
-
-            reader.readAsText(file);
         });
 
         // Delete functionality

@@ -84,47 +84,65 @@ router.post('/upload-file', upload.single('csvFile'), async (req, res) => {
         const upload = await newUpload.save();
         
         // Process the CSV file
+        // Use a Set to track unique emails
+        const uniqueEmails = new Set();
         const emails = [];
-        fs.createReadStream(req.file.path)
-            .pipe(csv())
-            .on('data', (row) => {
-                // Extract email from either 'mail' or 'email' column (case insensitive)
-                const emailKey = Object.keys(row).find(key => 
-                    key.toLowerCase() === 'mail' || key.toLowerCase() === 'email'
-                );
-                const email = emailKey ? row[emailKey] : null;
-                
-                if (!email) return; // Skip if no email found
-                
-                // Create email data object
-                const emailData = {
-                    email: email.trim().toLowerCase(),
-                    uploadId: upload._id,
-                    csvData: {}
-                };
+        
+        await new Promise((resolve, reject) => {
+            fs.createReadStream(req.file.path)
+                .pipe(csv())
+                .on('data', (row) => {
+                    // Extract email from either 'mail' or 'email' column (case insensitive)
+                    const emailKey = Object.keys(row).find(key => 
+                        key.toLowerCase() === 'mail' || key.toLowerCase() === 'email'
+                    );
+                    const email = emailKey ? row[emailKey] : null;
+                    
+                    if (!email) return; // Skip if no email found
+                    
+                    const trimmedEmail = email.trim().toLowerCase();
+                    
+                    // Skip empty or already processed emails
+                    if (trimmedEmail && !uniqueEmails.has(trimmedEmail)) {
+                        uniqueEmails.add(trimmedEmail);
+                        
+                        // Create email data object with all row data in csvData
+                        const emailData = {
+                            email: trimmedEmail,
+                            uploadId: upload._id,
+                            status: 'pending',
+                            csvData: {}
+                        };
 
-                // Add all other columns to csvData
-                for (const [key, value] of Object.entries(row)) {
-                    const lowerKey = key.toLowerCase();
-                    if (lowerKey !== 'mail' && lowerKey !== 'email') {
-                        emailData.csvData[key] = value === '' ? null : value;
-                    }
-                }
+                        // Add all other columns to csvData
+                        for (const [key, value] of Object.entries(row)) {
+                            const lowerKey = key.toLowerCase();
+                            if (lowerKey !== 'mail' && lowerKey !== 'email') {
+                                emailData.csvData[key] = value === '' ? null : value;
+                            }
+                        }
 
-                emails.push(emailData);
-            })
-            .on('end', async () => {
-                try {
-                    // Insert all emails in bulk
-                    if (emails.length > 0) {
-                        await Email.insertMany(emails);
+                        emails.push(emailData);
                     }
-                    res.json(upload);
-                } catch (err) {
-                    console.error('Error saving emails:', err);
-                    res.status(500).json({ error: 'Error saving emails' });
-                }
-            });
+                })
+                .on('end', resolve)
+                .on('error', reject);
+        });
+
+        try {
+            // Insert unique emails in bulk
+            if (emails.length > 0) {
+                await Email.insertMany(emails);
+                
+                // Update the upload with the correct count
+                upload.emailCount = emails.length;
+                await upload.save();
+            }
+            res.json(upload);
+        } catch (err) {
+            console.error('Error saving emails:', err);
+            res.status(500).json({ error: 'Error saving emails' });
+        }
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server Error' });

@@ -6,6 +6,18 @@
                 <i class="fas fa-coins me-2"></i>Choose Your Credit Package
             </h2>
             <p class="text-muted">Select the perfect credit package for your email verification needs</p>
+            
+            <!-- Debug Info -->
+            <div class="alert alert-info">
+                <small>
+                    <strong>Debug Info:</strong><br>
+                    Seller ID: <%= process.env.PADDLE_VENDOR_ID %><br>
+                    Environment: <%= process.env.NODE_ENV === 'production' ? 'production' : 'sandbox' %><br>
+                    10K Price ID: <%= process.env.PADDLE_PRODUCT_10K %><br>
+                    50K Price ID: <%= process.env.PADDLE_PRODUCT_50K %><br>
+                    100K Price ID: <%= process.env.PADDLE_PRODUCT_100K %>
+                </small>
+            </div>
         </div>
         
 
@@ -357,7 +369,12 @@
                     
                     if (data.name === 'checkout.error') {
                         console.error('Checkout errors:', data);
-                        showError('Payment error: ' + (data.data?.error?.message || JSON.stringify(data.data)));
+                        const errorMessage = data.data?.error?.message || data.data?.message || JSON.stringify(data.data);
+                        showError('Payment error: ' + errorMessage);
+                    }
+                    
+                    if (data.name === 'checkout.warning') {
+                        console.warn('Checkout warning:', data);
                     }
                     
                     if (data.name === 'checkout.payment_method_selected') {
@@ -366,10 +383,20 @@
                     
                     if (data.name === 'checkout.loaded') {
                         console.log('Checkout loaded successfully');
+                        // Hide loading modal when checkout is actually loaded
+                        if (loadingModal) {
+                            loadingModal.hide();
+                        }
                     }
                     
                     if (data.name === 'checkout.closed') {
                         console.log('Checkout closed by user');
+                    }
+                    
+                    // Handle any HTTP errors
+                    if (data.name === 'checkout.failed') {
+                        console.error('Checkout failed:', data);
+                        showError('Checkout failed: ' + (data.data?.message || 'Unknown error'));
                     }
                 }
             });
@@ -490,7 +517,12 @@
             }
 
             // Open Paddle Billing checkout
-            console.log('Opening Paddle checkout with product ID:', result.productId);
+            console.log('Opening Paddle checkout with price ID:', result.productId);
+            
+            // Validate price ID format
+            if (!result.productId || !result.productId.startsWith('pri_')) {
+                throw new Error('Invalid price ID format: ' + result.productId);
+            }
             
             const checkoutData = {
                 items: [
@@ -500,33 +532,34 @@
                     }
                 ],
                 customData: {
-                    userId: '<%= user._id %>',
-                    package: packageType
+                    user_id: '<%= user._id %>',
+                    package_type: packageType
                 },
                 customer: {
                     email: '<%= user.email %>'
-                },
-                settings: {
-                    allowLogout: false,
-                    displayMode: 'overlay',
-                    theme: 'light',
-                    locale: 'en'
                 }
             };
             
-            console.log('Checkout data:', checkoutData);
+            console.log('Checkout data being sent to Paddle:', JSON.stringify(checkoutData, null, 2));
             
             try {
                 Paddle.Checkout.open(checkoutData);
                 console.log('Paddle checkout opened successfully');
                 
                 // Hide loading modal after opening checkout
-                if (loadingModal) {
-                    loadingModal.hide();
-                }
+                setTimeout(() => {
+                    if (loadingModal) {
+                        loadingModal.hide();
+                    }
+                }, 1000);
                 
             } catch (checkoutError) {
                 console.error('Failed to open Paddle checkout:', checkoutError);
+                console.error('Checkout error details:', {
+                    name: checkoutError.name,
+                    message: checkoutError.message,
+                    stack: checkoutError.stack
+                });
                 throw new Error('Failed to open payment form: ' + checkoutError.message);
             }
             

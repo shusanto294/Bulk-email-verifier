@@ -1,0 +1,77 @@
+<!-- Additional scripts can be added here -->
+<script>
+    // Upload form functionality
+    if (document.getElementById('uploadForm')) {
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const file = document.getElementById('csvFile').files[0];
+            if (!file) return;
+
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            progressText.textContent = 'Processing: 0%';
+
+            try {
+                // Upload file to server
+                const formData = new FormData();
+                formData.append('csvFile', file);
+                
+                const uploadResponse = await fetch('/upload/upload-file', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!uploadResponse.ok) {
+                    const errorData = await uploadResponse.json();
+                    if (errorData.error === 'Insufficient credits') {
+                        throw new Error(`Insufficient credits. You need ${errorData.required} credits but have ${errorData.available}.`);
+                    }
+                    throw new Error(errorData.error || 'Upload failed');
+                }
+
+                const upload = await uploadResponse.json();
+                if (!upload._id) {
+                    throw new Error('Error creating upload record');
+                }
+
+                progressBar.style.width = '100%';
+                progressText.textContent = 'Processing complete! Page will refresh...';
+                
+                // Mark upload as complete
+                await fetch(`/upload/${upload._id}/complete`, { method: 'POST' });
+                setTimeout(() => location.reload(), 2000);
+                
+            } catch (err) {
+                console.error(err);
+                progressText.textContent = `Error: ${err.message}`;
+                progressBar.style.backgroundColor = '#dc3545';
+            }
+        });
+    }
+
+    // Delete functionality
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            if (confirm('Are you sure you want to delete this upload and all its emails?')) {
+                const uploadId = e.target.closest('.delete-btn').getAttribute('data-id');
+                try {
+                    const response = await fetch(`/api/uploads/${uploadId}`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok) {
+                        e.target.closest('tr').remove();
+                    } else {
+                        alert('Failed to delete upload');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Error deleting upload');
+                }
+            }
+        });
+    });
+</script> 

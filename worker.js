@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const emailExistence = require('email-existence');
 const Email = require('./models/email');
+const Upload = require('./models/upload');
+const User = require('./models/user');
 require('dotenv').config();
 
 // Database connection
@@ -10,21 +12,47 @@ mongoose.connect(process.env.MONGODB_URI)
 
 async function verifyEmailBatch() {
     try {
-        // Find up to 100 pending emails at a time
-        const emails = await Email.find({ status: 'pending' }).limit(1);
+        // Find up to 10 pending emails at a time (reduced for better credit management)
+        const emails = await Email.find({ status: 'pending' }).limit(10);
         
         if (emails.length === 0) {
             console.log('No pending emails found. Waiting for new emails...');
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 2000));
             return;
         }
 
         console.log(`Processing batch of ${emails.length} emails...`);
         
+        // Group emails by upload to get user information
+        const uploadIds = [...new Set(emails.map(email => email.uploadId))];
+        const uploads = await Upload.find({ _id: { $in: uploadIds } }).populate('userId');
+        const uploadMap = new Map(uploads.map(upload => [upload._id.toString(), upload]));
+        
         // Process each email sequentially
         for (const email of emails) {
             try {
-                console.log(`Verifying email: ${email.email}`);
+                const upload = uploadMap.get(email.uploadId.toString());
+                if (!upload || !upload.userId) {
+                    console.error(`No user found for email ${email.email}`);
+                    email.status = 'invalid';
+                    email.verificationDetails = { error: 'No user associated with upload' };
+                    await email.save();
+                    continue;
+                }
+
+                const user = upload.userId;
+                
+                // Check if user has credits
+                if (user.credits <= 0) {
+                    console.log(`User ${user.username} has no credits left. Skipping email verification.`);
+                    // Mark remaining emails as invalid due to insufficient credits
+                    email.status = 'invalid';
+                    email.verificationDetails = { error: 'Insufficient credits' };
+                    await email.save();
+                    continue;
+                }
+
+                console.log(`Verifying email: ${email.email} for user: ${user.username} (Credits: ${user.credits})`);
                 
                 // Add 5-second timeout for verification
                 const result = await Promise.race([
@@ -52,8 +80,22 @@ async function verifyEmailBatch() {
                     console.log(`Email ${email.email} is ${result.exists ? 'valid' : 'invalid'}`);
                 }
 
+                // Deduct 1 credit for each email verification
+                try {
+                    await user.deductCredits(1);
+                    console.log(`Deducted 1 credit from user ${user.username}. Remaining credits: ${user.credits}`);
+                } catch (creditError) {
+                    console.error(`Error deducting credits for user ${user.username}:`, creditError);
+                    // If credit deduction fails, mark email as invalid
+                    email.status = 'invalid';
+                    email.verificationDetails = { error: 'Credit deduction failed' };
+                }
+
                 await email.save();
                 console.log(`Updated email ${email.email} to status: ${email.status}`);
+                
+                // Small delay between verifications to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 100));
             } catch (err) {
                 console.error(`Error processing email ${email.email}:`, err);
             }
@@ -70,7 +112,7 @@ async function verifyPendingEmails() {
 }
 
 // Start the verification process
-console.log('Starting continuous email verification worker...');
+console.log('Starting continuous email verification worker with credit management...');
 verifyPendingEmails();
 
 // Handle graceful shutdown

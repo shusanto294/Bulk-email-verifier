@@ -1,0 +1,137 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="success-animation mb-4">
+                        <div class="success-circle">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                    
+                    <h2 class="text-success mb-3">
+                        <i class="fas fa-credit-card me-2"></i>Payment Successful!
+                    </h2>
+                    
+                    <p class="lead text-muted mb-4">
+                        Thank you for your purchase! Your credits have been added to your account.
+                    </p>
+                    
+                    <% if (transactionId) { %>
+                    <div class="alert alert-info mb-4">
+                        <strong>Transaction ID:</strong> <%= transactionId %>
+                    </div>
+                    <% } %>
+                    
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-info-circle me-2"></i>What's Next?
+                                    </h5>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            Your credits are now available in your dashboard
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            You can start verifying email addresses immediately
+                                        </li>
+                                        <li class="mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            A receipt has been sent to your email address
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="/dashboard" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                        </a>
+                        <a href="/upload" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-upload me-2"></i>Upload Email List
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .success-animation {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .success-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        animation: scaleIn 0.5s ease-out 0.3s both;
+    }
+    
+    .success-circle i {
+        font-size: 3rem;
+        color: white;
+        animation: checkmark 0.3s ease-out 0.8s both;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes scaleIn {
+        from {
+            transform: scale(0);
+        }
+        to {
+            transform: scale(1);
+        }
+    }
+    
+    @keyframes checkmark {
+        from {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    .card {
+        border: none;
+        box-shadow: var(--shadow-md);
+        border-radius: var(--border-radius);
+    }
+    
+    .btn {
+        border-radius: var(--border-radius-sm);
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+</style> 

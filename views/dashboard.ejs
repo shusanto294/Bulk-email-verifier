@@ -1,0 +1,154 @@
+<!-- Welcome Section -->
+<div class="card">
+    <div class="text-center">
+        <h2 class="mb-3">
+            <i class="fas fa-chart-line me-2"></i>Dashboard Overview
+        </h2>
+        <p class="text-muted mb-0">Track your email verification progress and manage your uploads</p>
+    </div>
+</div>
+
+<!-- Statistics Grid -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="fas fa-upload fa-2x" style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                </div>
+                <h3 class="mb-2" style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"><%= stats.totalUploads %></h3>
+                <p class="text-muted mb-0 text-uppercase small fw-semibold">Total Uploads</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="fas fa-envelope fa-2x" style="background: var(--secondary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                </div>
+                <h3 class="mb-2" style="background: var(--secondary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"><%= stats.totalEmails %></h3>
+                <p class="text-muted mb-0 text-uppercase small fw-semibold">Total Emails</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="fas fa-check-circle fa-2x" style="background: var(--success-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                </div>
+                <h3 class="mb-2" style="background: var(--success-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"><%= stats.verifiedEmails %></h3>
+                <p class="text-muted mb-0 text-uppercase small fw-semibold">Verified Emails</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="fas fa-times-circle fa-2x" style="background: var(--danger-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                </div>
+                <h3 class="mb-2" style="background: var(--danger-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"><%= stats.invalidEmails %></h3>
+                <p class="text-muted mb-0 text-uppercase small fw-semibold">Invalid Emails</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h3 class="mb-4">
+            <i class="fas fa-bolt me-2"></i>Quick Actions
+        </h3>
+        <div class="text-center">
+            <a href="/upload" class="btn btn-primary btn-lg me-3">
+                <i class="fas fa-upload me-2"></i>Upload New File
+            </a>
+            <a href="/upload" class="btn btn-success btn-lg">
+                <i class="fas fa-list me-2"></i>View All Uploads
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Uploads -->
+<div class="card">
+    <div class="card-body">
+        <h3 class="mb-4">
+            <i class="fas fa-history me-2"></i>Recent Uploads
+        </h3>
+        <% if (uploads.length > 0) { %>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Upload Date</th>
+                            <th>Emails</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% uploads.forEach(upload => { %>
+                            <tr>
+                                <td>
+                                    <i class="fas fa-file-csv me-2" style="color: #667eea;"></i>
+                                    <%= upload.filename %>
+                                </td>
+                                <td><%= upload.createdAt.toLocaleString() %></td>
+                                <td>
+                                    <span class="badge bg-secondary"><%= upload.totalCount || 0 %></span>
+                                </td>
+                                <td>
+                                    <% if (upload.displayStatus === 'Pending') { %>
+                                        <span class="status-badge pending">
+                                            <i class="fas fa-clock me-1"></i>
+                                            <%= upload.displayStatus %>
+                                            <% if (upload.pendingCount > 0) { %>
+                                                <span class="badge bg-warning ms-1"><%= upload.pendingCount %></span>
+                                            <% } %>
+                                        </span>
+                                    <% } else if (upload.displayStatus === 'Processed') { %>
+                                        <span class="status-badge verified">
+                                            <i class="fas fa-check me-1"></i>
+                                            <%= upload.displayStatus %>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="status-badge invalid">
+                                            <i class="fas fa-exclamation me-1"></i>
+                                            <%= upload.displayStatus %>
+                                        </span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <a href="/upload/<%= upload._id %>" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center mt-4">
+                <a href="/upload" class="btn btn-outline-primary">
+                    <i class="fas fa-list me-2"></i>View All Uploads
+                </a>
+            </div>
+        <% } else { %>
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-inbox fa-4x" style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                </div>
+                <h5 class="text-muted mb-3">No uploads yet</h5>
+                <p class="text-muted mb-4">Start by uploading your first CSV file to verify email addresses.</p>
+                <a href="/upload" class="btn btn-primary btn-lg">
+                    <i class="fas fa-upload me-2"></i>Upload Your First File
+                </a>
+            </div>
+        <% } %>
+    </div>
+</div> 

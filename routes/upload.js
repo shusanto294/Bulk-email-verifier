@@ -6,6 +6,8 @@ const fs = require('fs');
 const path = require('path');
 const Upload = require('../models/upload');
 const Email = require('../models/email');
+const User = require('../models/user');
+const { requireAuth, requireCredits } = require('../middleware/auth');
 
 // Ensure uploads directory exists
 const uploadDir = 'uploads';
@@ -25,10 +27,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Upload form
-router.get('/', async (req, res) => {
+// Upload form - require authentication
+router.get('/', requireAuth, async (req, res) => {
     try {
-        const uploads = await Upload.find().sort({ createdAt: -1 });
+        const uploads = await Upload.find({ userId: req.user._id }).sort({ createdAt: -1 });
         
         // Enhanced status checking with verification of all email states
         const uploadsWithStatus = await Promise.all(uploads.map(async (upload) => {
@@ -60,25 +62,62 @@ router.get('/', async (req, res) => {
             };
         }));
         
-        res.render('upload', { uploads: uploadsWithStatus });
+        res.render('upload', { 
+            title: 'Upload',
+            activePage: 'upload',
+            uploads: uploadsWithStatus,
+            user: req.user,
+            success: req.query.success || null,
+            error: req.query.error || null
+        });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');
     }
 });
 
-// File upload endpoint
-router.post('/upload-file', upload.single('csvFile'), async (req, res) => {
+// File upload endpoint - require authentication and credits
+router.post('/upload-file', requireAuth, upload.single('csvFile'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        // Count emails in CSV to check credits
+        const emailCount = await new Promise((resolve, reject) => {
+            const uniqueEmails = new Set();
+            fs.createReadStream(req.file.path)
+                .pipe(csv())
+                .on('data', (row) => {
+                    const emailKey = Object.keys(row).find(key => 
+                        key.toLowerCase() === 'mail' || key.toLowerCase() === 'email'
+                    );
+                    const email = emailKey ? row[emailKey] : null;
+                    if (email && email.trim()) {
+                        uniqueEmails.add(email.trim().toLowerCase());
+                    }
+                })
+                .on('end', () => resolve(uniqueEmails.size))
+                .on('error', reject);
+        });
+
+        // Check if user has enough credits
+        if (req.user.credits < emailCount) {
+            // Delete uploaded file
+            fs.unlinkSync(req.file.path);
+            return res.status(402).json({ 
+                error: 'Insufficient credits', 
+                required: emailCount, 
+                available: req.user.credits 
+            });
         }
 
         const newUpload = new Upload({
             filename: req.file.originalname,
             size: req.file.size,
             path: req.file.path,
-            processed: false
+            processed: false,
+            userId: req.user._id
         });
 
         const upload = await newUpload.save();
@@ -150,14 +189,14 @@ router.post('/upload-file', upload.single('csvFile'), async (req, res) => {
 });
 
 // Old route kept for backward compatibility (can be removed later)
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'Please use the file upload endpoint instead' });
 });
 
-// Mark upload as complete
-router.post('/:id/complete', async (req, res) => {
+// Mark upload as complete - require authentication
+router.post('/:id/complete', requireAuth, async (req, res) => {
     try {
-        const upload = await Upload.findById(req.params.id);
+        const upload = await Upload.findOne({ _id: req.params.id, userId: req.user._id });
         if (!upload) {
             return res.status(404).json({ error: 'Upload not found' });
         }
@@ -171,13 +210,17 @@ router.post('/:id/complete', async (req, res) => {
     }
 });
 
-// Get upload details
-router.get('/:id', async (req, res) => {
+// Get upload details - require authentication
+router.get('/:id', requireAuth, async (req, res) => {
     try {
         const perPage = 50;
         const page = req.query.page || 1;
         
-        const upload = await Upload.findById(req.params.id);
+        const upload = await Upload.findOne({ _id: req.params.id, userId: req.user._id });
+        if (!upload) {
+            return res.status(404).send('Upload not found');
+        }
+
         const totalEmails = await Email.countDocuments({ uploadId: upload._id });
         
         // Get counts from ALL emails, not just current page
@@ -208,12 +251,15 @@ router.get('/:id', async (req, res) => {
         };
 
         res.render('upload-details', { 
+            title: 'Upload Details',
+            activePage: 'upload',
             upload, 
             emails, 
             stats,
             page,
             totalEmails,
-            pages: Math.ceil(totalEmails / perPage)
+            pages: Math.ceil(totalEmails / perPage),
+            user: req.user
         });
     } catch (err) {
         console.error(err);
@@ -221,8 +267,8 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Download CSV routes
-router.get('/:id/download/:type', async (req, res) => {
+// Download CSV routes - require authentication
+router.get('/:id/download/:type', requireAuth, async (req, res) => {
     try {
         const { id, type } = req.params;
         const validTypes = ['all', 'verified', 'invalid', 'pending'];
@@ -231,7 +277,7 @@ router.get('/:id/download/:type', async (req, res) => {
             return res.status(400).send('Invalid download type');
         }
 
-        const upload = await Upload.findById(id);
+        const upload = await Upload.findOne({ _id: id, userId: req.user._id });
         if (!upload) {
             return res.status(404).send('Upload not found');
         }
@@ -249,38 +295,41 @@ router.get('/:id/download/:type', async (req, res) => {
             const row = {
                 'Email': email.email,
                 'Status': email.status,
-                'Verified At': email.verifiedAt || ''
+                'Verified At': email.verifiedAt ? email.verifiedAt.toISOString() : ''
             };
-            
-            // Add all csvData fields and collect headers
+
+            // Add all csvData fields to headers and row
             if (email.csvData) {
-                Object.entries(email.csvData).forEach(([key, value]) => {
+                Object.keys(email.csvData).forEach(key => {
                     headers.add(key);
-                    row[key] = value;
+                    row[key] = email.csvData[key] || '';
                 });
             }
+
             return row;
         });
 
-        // Convert to CSV
-        const headerRow = Array.from(headers).join(',') + '\n';
-        const csvData = rows.map(row => 
-            Array.from(headers).map(header => 
-                `"${row[header] !== undefined ? row[header] : ''}"`
-            ).join(',')
-        ).join('\n');
-        
-        const csvContent = headerRow + csvData;
-        
-        // Set response headers before sending
-        res.set('Content-Type', 'text/csv');
-        res.set('Content-Disposition', `attachment; filename=${upload.filename}-${type}.csv`);
-        
-        // Send the CSV content
-        return res.send(csvContent);
-        res.setHeader('Content-Disposition', `attachment; filename=${upload.filename}-${type}.csv`);
-        
-        res.send(csv);
+        // Convert headers Set to Array and sort
+        const headerArray = Array.from(headers).sort();
+
+        // Create CSV content
+        const csvContent = [
+            headerArray.join(','),
+            ...rows.map(row => 
+                headerArray.map(header => {
+                    const value = row[header] || '';
+                    // Escape commas and quotes in CSV
+                    if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+                        return `"${value.replace(/"/g, '""')}"`;
+                    }
+                    return value;
+                }).join(',')
+            )
+        ].join('\n');
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="${upload.filename.replace('.csv', '')}_${type}_${new Date().toISOString().split('T')[0]}.csv"`);
+        res.send(csvContent);
     } catch (err) {
         console.error(err);
         res.status(500).send('Server Error');

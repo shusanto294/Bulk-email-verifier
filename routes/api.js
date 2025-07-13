@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const Upload = require('../models/upload');
 const Email = require('../models/email');
+const { requireAuth } = require('../middleware/auth');
 
-// Get upload status
-router.get('/uploads/:id/status', async (req, res) => {
+// Get upload status - require authentication
+router.get('/uploads/:id/status', requireAuth, async (req, res) => {
     try {
-        const upload = await Upload.findById(req.params.id);
+        const upload = await Upload.findOne({ _id: req.params.id, userId: req.user._id });
         if (!upload) return res.status(404).json({ error: 'Upload not found' });
 
         const totalCount = await Email.countDocuments({ uploadId: upload._id });
@@ -38,10 +39,10 @@ router.get('/uploads/:id/status', async (req, res) => {
     }
 });
 
-// Delete upload and associated emails
-router.delete('/uploads/:id', async (req, res) => {
+// Delete upload and associated emails - require authentication
+router.delete('/uploads/:id', requireAuth, async (req, res) => {
     try {
-        const upload = await Upload.findById(req.params.id);
+        const upload = await Upload.findOne({ _id: req.params.id, userId: req.user._id });
         if (!upload) return res.status(404).json({ error: 'Upload not found' });
 
         // Delete all associated emails
@@ -51,6 +52,19 @@ router.delete('/uploads/:id', async (req, res) => {
         await Upload.findByIdAndDelete(req.params.id);
 
         res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Get user credits
+router.get('/user/credits', requireAuth, async (req, res) => {
+    try {
+        res.json({
+            success: true,
+            credits: req.user.credits
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });

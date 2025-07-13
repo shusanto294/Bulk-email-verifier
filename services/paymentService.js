@@ -6,7 +6,12 @@ class PaymentService {
     constructor() {
         this.paddleVendorId = process.env.PADDLE_VENDOR_ID;
         this.paddleApiKey = process.env.PADDLE_API_KEY;
-        this.paddleEnvironment = process.env.NODE_ENV === 'production' ? 'production' : 'sandbox';
+        
+        // Determine environment - prioritize PADDLE_SANDBOX setting
+        const forceSandbox = process.env.PADDLE_SANDBOX === 'true';
+        const isProduction = process.env.NODE_ENV === 'production' && !forceSandbox;
+        
+        this.paddleEnvironment = isProduction ? 'production' : 'sandbox';
         this.paddleBaseUrl = this.paddleEnvironment === 'production' 
             ? 'https://vendors.paddle.com/api' 
             : 'https://sandbox-vendors.paddle.com/api';
@@ -17,7 +22,9 @@ class PaymentService {
             baseUrl: this.paddleBaseUrl,
             vendorId: this.paddleVendorId,
             nodeEnv: process.env.NODE_ENV,
-            paddleSandbox: process.env.PADDLE_SANDBOX
+            paddleSandbox: process.env.PADDLE_SANDBOX,
+            forceSandbox: forceSandbox,
+            isProduction: isProduction
         });
     }
 
@@ -262,19 +269,29 @@ class PaymentService {
     // Test API connection
     async testApiConnection() {
         try {
-            // Test Paddle API connection by getting products
-            const response = await axios.get(
-                `${this.paddleBaseUrl}/2.0/product/get_products`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${this.paddleApiKey}`
-                    }
-                }
-            );
+            console.log('Testing Paddle API connection...');
+            console.log('Using URL:', `${this.paddleBaseUrl}/2.0/product/get_products`);
+            console.log('Environment:', this.paddleEnvironment);
+            
+            // For sandbox, we'll try a simpler endpoint first
+            const testUrl = this.paddleEnvironment === 'sandbox' 
+                ? `${this.paddleBaseUrl}/2.0/user/get_user` 
+                : `${this.paddleBaseUrl}/2.0/product/get_products`;
+            
+            const response = await axios.post(testUrl, {
+                vendor_id: this.paddleVendorId,
+                vendor_auth_code: this.paddleApiKey
+            });
+            
             return { success: true, data: response.data };
         } catch (error) {
             console.error('Paddle API connection test failed:', error.response?.data || error.message);
-            return { success: false, error: error.response?.data || error.message };
+            return { 
+                success: false, 
+                error: error.response?.data || error.message,
+                environment: this.paddleEnvironment,
+                url: `${this.paddleBaseUrl}/2.0/user/get_user`
+            };
         }
     }
 

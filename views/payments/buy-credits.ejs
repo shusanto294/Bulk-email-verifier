@@ -8,12 +8,7 @@
             <p class="text-muted">Select the perfect credit package for your email verification needs</p>
         </div>
         
-        <!-- Test Button -->
-        <div class="text-center mb-4">
-            <button class="btn btn-warning" id="testButton">
-                <i class="fas fa-bug me-2"></i>Test JavaScript
-            </button>
-        </div>
+
         
         <div class="row g-4">
             <!-- 10K Credits Package -->
@@ -278,7 +273,7 @@
 </style>
 
 <!-- All JavaScript in one place -->
-<script src="https://cdn.paddle.com/paddle/paddle.js" data-environment="sandbox"></script>
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 <script>
     console.log('Script starting...');
     
@@ -333,26 +328,59 @@
                 throw new Error('Paddle script failed to load');
             }
 
-            const vendorIdString = '<%= process.env.PADDLE_VENDOR_ID %>'; // env variables are strings by default
-            const vendorId = parseInt(vendorIdString, 10);
-            if (isNaN(vendorId)) {
-                throw new Error('Paddle vendor ID not configured or is not a valid integer');
+            const sellerIdString = '<%= process.env.PADDLE_VENDOR_ID %>'; // For Paddle Billing, this is the seller ID
+            const sellerId = parseInt(sellerIdString, 10);
+            if (isNaN(sellerId) || !sellerIdString) {
+                throw new Error('Paddle seller ID not configured or is not a valid integer');
             }
 
-            // Initialize Paddle, expects vendor to be an integer
-            Paddle.Setup({
-                vendor: vendorId,
+            const isProduction = '<%= process.env.NODE_ENV %>' === 'production';
+            const forceSandbox = '<%= process.env.PADDLE_SANDBOX %>' === 'true';
+            const environment = (isProduction && !forceSandbox) ? 'production' : 'sandbox';
+
+            // Set environment first for Paddle Billing - explicitly using sandbox
+            Paddle.Environment.set('sandbox');
+
+            // Initialize Paddle Billing with correct method
+            Paddle.Initialize({
+                seller: sellerId,
                 eventCallback: function(data) {
                     console.log('Paddle event:', data);
+                    
+                    // Handle specific events for Paddle Billing
+                    if (data.name === 'checkout.completed') {
+                        console.log('✅ Checkout completed:', data);
+                        // Redirect to success page
+                        const transactionId = data.data?.transaction_id || data.data?.id || 'unknown';
+                        window.location.href = '/payments/success?transaction_id=' + transactionId;
+                    }
+                    
+                    if (data.name === 'checkout.error') {
+                        console.error('Checkout errors:', data);
+                        showError('Payment error: ' + (data.data?.error?.message || JSON.stringify(data.data)));
+                    }
+                    
+                    if (data.name === 'checkout.payment_method_selected') {
+                        console.log('Payment method selected:', data);
+                    }
+                    
+                    if (data.name === 'checkout.loaded') {
+                        console.log('Checkout loaded successfully');
+                    }
+                    
+                    if (data.name === 'checkout.closed') {
+                        console.log('Checkout closed by user');
+                    }
                 }
             });
 
             // Log environment information for debugging
             console.log('🔍 Paddle Environment Debug Info:');
-            console.log('- Vendor ID:', vendorId);
-            console.log('- Environment:', '<%= process.env.NODE_ENV %>');
+            console.log('- Seller ID:', sellerId);
+            console.log('- Environment:', environment);
+            console.log('- NODE_ENV:', '<%= process.env.NODE_ENV %>');
             console.log('- PADDLE_SANDBOX:', '<%= process.env.PADDLE_SANDBOX %>');
-            console.log('- Expected Environment:', '<%= process.env.NODE_ENV === "production" ? "production" : "sandbox" %>');
+            console.log('- Is Production:', isProduction);
 
             paddleInitialized = true;
             console.log('✅ Paddle initialized successfully');
@@ -461,22 +489,46 @@
                 throw new Error(result.error || 'Failed to create checkout session');
             }
 
-            // Open Paddle checkout
-            console.log('Opening Paddle checkout...');
-            Paddle.Checkout.open({
-                product: result.productId,
-                email: '<%= user.email %>',
-                successCallback: function(data) {
-                    console.log('✅ Payment successful:', data);
-                    window.location.href = '/payments/success?transaction_id=' + data.checkout.id;
-                },
-                closeCallback: function(data) {
-                    console.log('Checkout closed:', data);
-                    if (loadingModal) {
-                        loadingModal.hide();
+            // Open Paddle Billing checkout
+            console.log('Opening Paddle checkout with product ID:', result.productId);
+            
+            const checkoutData = {
+                items: [
+                    {
+                        priceId: result.productId,
+                        quantity: 1
                     }
+                ],
+                customData: {
+                    userId: '<%= user._id %>',
+                    package: packageType
+                },
+                customer: {
+                    email: '<%= user.email %>'
+                },
+                settings: {
+                    allowLogout: false,
+                    displayMode: 'overlay',
+                    theme: 'light',
+                    locale: 'en'
                 }
-            });
+            };
+            
+            console.log('Checkout data:', checkoutData);
+            
+            try {
+                Paddle.Checkout.open(checkoutData);
+                console.log('Paddle checkout opened successfully');
+                
+                // Hide loading modal after opening checkout
+                if (loadingModal) {
+                    loadingModal.hide();
+                }
+                
+            } catch (checkoutError) {
+                console.error('Failed to open Paddle checkout:', checkoutError);
+                throw new Error('Failed to open payment form: ' + checkoutError.message);
+            }
             
         } catch (error) {
             console.error('❌ Checkout error:', error);

@@ -1,27 +1,34 @@
 <!-- Homepage specific styles -->
 <style>
     .homepage-validation-result {
-        padding: 1rem;
+        padding: 1.25rem;
         border-radius: var(--border-radius-sm);
-        font-weight: 500;
+        font-weight: 600;
         display: none;
         margin-top: 1rem;
+        border-left: 4px solid;
+        box-shadow: var(--shadow-sm);
+        position: relative;
     }
 
     .homepage-validation-result.valid {
-        background: var(--success-gradient);
-        color: white;
+        background: linear-gradient(135deg, rgba(72, 187, 120, 0.1) 0%, rgba(56, 178, 172, 0.1) 100%);
+        color: #22543d;
+        border-left-color: #48bb78;
     }
 
     .homepage-validation-result.invalid {
-        background: var(--danger-gradient);
-        color: white;
+        background: linear-gradient(135deg, rgba(245, 101, 101, 0.1) 0%, rgba(237, 100, 166, 0.1) 100%);
+        color: #742a2a;
+        border-left-color: #f56565;
     }
 
     .homepage-validation-result.loading {
-        background: var(--warning-gradient);
-        color: white;
+        background: linear-gradient(135deg, rgba(250, 204, 21, 0.1) 0%, rgba(251, 191, 36, 0.1) 100%);
+        color: #92400e;
+        border-left-color: #f59e0b;
     }
+
 </style>
 
 <!-- Hero Section -->
@@ -253,7 +260,7 @@
         // Show loading state
         validateBtn.disabled = true;
         validateBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Validating...';
-        showValidationResult('Validating email address...', 'loading');
+        // showValidationResult('Validating email address...', 'loading');
         
         try {
             const response = await fetch('/api/validate-email', {
@@ -288,10 +295,7 @@
         validationResult.className = `homepage-validation-result ${type}`;
         validationResult.style.display = 'block';
         
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-            validationResult.style.display = 'none';
-        }, 5000);
+        // Messages will remain visible permanently - no auto-hide
     }
     
     // Smooth scrolling for navigation links

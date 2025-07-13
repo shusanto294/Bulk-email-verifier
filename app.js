@@ -54,11 +54,13 @@ app.set('layout', 'layouts/main');
 app.set('layout extractScripts', true);
 app.set('layout extractStyles', true);
 
-// Disable layout for auth routes
+// Disable layout for auth routes and homepage
 app.use('/auth', (req, res, next) => {
     res.locals.layout = false;
     next();
 });
+
+// Homepage will use the layout system
 
 // Routes
 app.use('/auth', authRoutes);
@@ -67,17 +69,57 @@ app.use('/payments', paymentRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/api', require('./routes/api'));
 
-// Home route - redirect to login if not authenticated, otherwise to dashboard
+// Home route - show homepage for non-authenticated users, dashboard for authenticated users
 app.get('/', (req, res) => {
     if (!req.session.userId) {
-        res.redirect('/auth/login');
+        res.render('homepage', { 
+            title: 'Bulk Email Verifier - Professional Email Validation Service',
+            user: null 
+        });
     } else {
         res.redirect('/dashboard');
     }
 });
 
+// Email validation API endpoint
+app.post('/api/validate-email', async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.json({ valid: false, message: 'Email address is required' });
+        }
+
+        // Basic email format validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.json({ valid: false, message: 'Invalid email format' });
+        }
+
+        // Use email-existence package to check if email exists
+        const emailExistence = require('email-existence');
+        
+        emailExistence.check(email, (error, response) => {
+            if (error) {
+                console.error('Email validation error:', error);
+                return res.json({ valid: false, message: 'Unable to verify email at this time' });
+            }
+            
+            if (response) {
+                res.json({ valid: true, message: 'Email address is valid and exists' });
+            } else {
+                res.json({ valid: false, message: 'Email address does not exist' });
+            }
+        });
+        
+    } catch (error) {
+        console.error('Email validation error:', error);
+        res.json({ valid: false, message: 'An error occurred while validating the email' });
+    }
+});
+
 // Find available port starting from 3001
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

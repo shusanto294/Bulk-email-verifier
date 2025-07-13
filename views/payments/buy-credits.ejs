@@ -333,18 +333,18 @@
                 throw new Error('Paddle script failed to load');
             }
 
-            const vendorId = '<%= process.env.PADDLE_VENDOR_ID %>';
-            if (!vendorId) {
-                throw new Error('Paddle vendor ID not configured');
+            const vendorIdString = '<%= process.env.PADDLE_VENDOR_ID %>'; // env variables are strings by default
+            const vendorId = parseInt(vendorIdString, 10);
+            if (isNaN(vendorId)) {
+                throw new Error('Paddle vendor ID not configured or is not a valid integer');
             }
 
-            // Initialize Paddle
+            // Initialize Paddle, expects vendor to be an integer
             Paddle.Setup({
                 vendor: vendorId,
                 eventCallback: function(data) {
                     console.log('Paddle event:', data);
-                },
-                environment: '<%= process.env.NODE_ENV === "production" ? "production" : "sandbox" %>'
+                }
             });
 
             paddleInitialized = true;
@@ -395,14 +395,14 @@
             button.addEventListener('click', async function(e) {
                 e.preventDefault();
                 
-                const package = this.getAttribute('data-package');
+                const packageType = this.getAttribute('data-package');
                 const price = this.getAttribute('data-price');
                 const credits = this.getAttribute('data-credits');
                 
-                console.log('Button clicked:', { package, price, credits });
+                console.log('Button clicked:', { packageType, price, credits });
                 
                 try {
-                    await openPaddleCheckout(package, price, credits);
+                    await openPaddleCheckout(packageType, price, credits);
                 } catch (error) {
                     console.error('Failed to open checkout:', error);
                     showError(error.message);
@@ -413,10 +413,10 @@
         console.log('✅ Event listeners added successfully');
     }
 
-    async function openPaddleCheckout(package, price, credits) {
+    async function openPaddleCheckout(packageType, price, credits) {
         try {
             console.log('=== openPaddleCheckout START ===');
-            console.log('Parameters:', { package, price, credits });
+            console.log('Parameters:', { packageType, price, credits });
             
             // Check if Paddle is initialized
             if (!paddleInitialized) {
@@ -436,7 +436,7 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    package: package,
+                    package: packageType,
                     price: price,
                     credits: credits
                 })

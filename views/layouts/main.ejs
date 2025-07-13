@@ -26,6 +26,11 @@
             box-sizing: border-box;
         }
 
+        .auth-footer {
+            margin-top: 30px;
+        }
+
+
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -390,12 +395,17 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <h1 class="mb-0">
-                        <i class="fas fa-envelope-open-text me-2"></i>Bulk Email Verifier
+                        <a href="/" style="color: white; text-decoration: none;">
+                            <i class="fas fa-envelope-open-text me-2"></i>Bulk Email Verifier
+                        </a>
                     </h1>
                 </div>
                 <div class="col-md-6 text-end">
                     <div class="d-flex align-items-center justify-content-end">
                         <div class="nav-links me-3">
+                            <a href="/" class="<%= typeof activePage !== 'undefined' && activePage === 'home' ? 'active' : '' %>">
+                                <i class="fas fa-home me-1"></i>Home
+                            </a>
                             <a href="/dashboard" class="<%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>">
                                 <i class="fas fa-chart-line me-1"></i>Dashboard
                             </a>
@@ -412,32 +422,7 @@
             </div>
         </div>
 
-        <!-- User Info and Credits -->
-        <% if (typeof user !== 'undefined' && user) { %>
-            <div class="user-info">
-                <div class="row align-items-center">
-                    <div class="col-md-6">
-                        <h5 class="mb-1">
-                            <i class="fas fa-user me-2"></i><%= user.username %>
-                        </h5>
-                        <small class="text-muted"><%= user.email %></small>
-                    </div>
-                    <div class="col-md-6 text-end">
-                        <div class="credit-display">
-                            <h4 class="mb-1">
-                                <i class="fas fa-coins me-2"></i><%= user.credits %>
-                            </h4>
-                            <small>Available Credits</small>
-                            <div class="mt-2">
-                                <a href="/payments/buy-credits" class="btn btn-light btn-sm">
-                                    <i class="fas fa-plus me-1"></i>Buy More Credits
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <% } %>
+
 
         <!-- Success/Error Messages -->
         <% if (typeof success !== 'undefined' && success) { %>
@@ -454,6 +439,18 @@
 
         <!-- Main Content -->
         <%- body %>
+
+        <!-- Footer -->
+        <div class="footer mt-5">
+            <div class="text-center">
+                <p class="mb-0" style="color: #718096; font-size: 0.9rem;">
+                    <i class="fas fa-code me-1"></i>Developed by 
+                    <a href="https://bdwebguy.com" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                        Bd Web Guy
+                    </a>
+                </p>
+            </div>
+        </div>
 
     </div>
 

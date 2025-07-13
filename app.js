@@ -69,16 +69,13 @@ app.use('/payments', paymentRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/api', require('./routes/api'));
 
-// Home route - show homepage for non-authenticated users, dashboard for authenticated users
+// Home route - show homepage for all users (authenticated and non-authenticated)
 app.get('/', (req, res) => {
-    if (!req.session.userId) {
-        res.render('homepage', { 
-            title: 'Bulk Email Verifier - Professional Email Validation Service',
-            user: null 
-        });
-    } else {
-        res.redirect('/dashboard');
-    }
+    res.render('homepage', { 
+        title: 'Bulk Email Verifier - Professional Email Validation Service',
+        user: req.user || null,
+        activePage: 'home'
+    });
 });
 
 // Email validation API endpoint

@@ -10,6 +10,15 @@ class PaymentService {
         this.paddleBaseUrl = this.paddleEnvironment === 'production' 
             ? 'https://vendors.paddle.com/api' 
             : 'https://sandbox-vendors.paddle.com/api';
+        
+        // Log environment for debugging
+        console.log('🔍 PaymentService Environment:', {
+            environment: this.paddleEnvironment,
+            baseUrl: this.paddleBaseUrl,
+            vendorId: this.paddleVendorId,
+            nodeEnv: process.env.NODE_ENV,
+            paddleSandbox: process.env.PADDLE_SANDBOX
+        });
     }
 
     // Calculate credits based on amount (1000 credits per $10)

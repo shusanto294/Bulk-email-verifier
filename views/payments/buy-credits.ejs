@@ -278,7 +278,7 @@
 </style>
 
 <!-- All JavaScript in one place -->
-<script src="https://cdn.paddle.com/paddle/paddle.js"></script>
+<script src="https://cdn.paddle.com/paddle/paddle.js" data-environment="sandbox"></script>
 <script>
     console.log('Script starting...');
     
@@ -346,6 +346,13 @@
                     console.log('Paddle event:', data);
                 }
             });
+
+            // Log environment information for debugging
+            console.log('🔍 Paddle Environment Debug Info:');
+            console.log('- Vendor ID:', vendorId);
+            console.log('- Environment:', '<%= process.env.NODE_ENV %>');
+            console.log('- PADDLE_SANDBOX:', '<%= process.env.PADDLE_SANDBOX %>');
+            console.log('- Expected Environment:', '<%= process.env.NODE_ENV === "production" ? "production" : "sandbox" %>');
 
             paddleInitialized = true;
             console.log('✅ Paddle initialized successfully');

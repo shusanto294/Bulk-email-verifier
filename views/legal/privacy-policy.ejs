@@ -1,0 +1,125 @@
+<%
+var title = 'Privacy Policy';
+var activePage = 'privacy';
+%>
+
+<div class="card">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold" style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            <i class="fas fa-shield-alt me-2"></i>Privacy Policy
+        </h2>
+        <p class="text-muted">Last updated: <%= new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <h3 class="h5 fw-bold text-primary mb-3">1. Introduction</h3>
+            <p>Bulk Email Verifier - we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our email verification service.</p>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">2. Information We Collect</h3>
+            
+            <h4 class="h6 fw-bold mb-2">Personal Information</h4>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-user text-info me-2"></i>Name and email address when you create an account</li>
+                <li class="mb-2"><i class="fas fa-credit-card text-info me-2"></i>Payment information processed securely through Paddle</li>
+                <li class="mb-2"><i class="fas fa-envelope text-info me-2"></i>Communication records when you contact our support</li>
+            </ul>
+
+            <h4 class="h6 fw-bold mb-2 mt-3">Email Data for Verification</h4>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-list text-warning me-2"></i>Email addresses you submit for verification</li>
+                <li class="mb-2"><i class="fas fa-file-csv text-warning me-2"></i>CSV files containing email lists (temporarily processed)</li>
+                <li class="mb-2"><i class="fas fa-chart-bar text-warning me-2"></i>Verification results and statistics</li>
+            </ul>
+
+            <h4 class="h6 fw-bold mb-2 mt-3">Technical Information</h4>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-server text-secondary me-2"></i>IP address and browser information</li>
+                <li class="mb-2"><i class="fas fa-clock text-secondary me-2"></i>Service usage patterns and timestamps</li>
+                <li class="mb-2"><i class="fas fa-bug text-secondary me-2"></i>Error logs and performance data</li>
+            </ul>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">3. How We Use Your Information</h3>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Provide and maintain our email verification service</li>
+                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Process payments and manage your account</li>
+                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Send important service notifications and updates</li>
+                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Provide customer support and respond to inquiries</li>
+                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Improve our service quality and user experience</li>
+                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Detect and prevent fraud or abuse</li>
+            </ul>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">4. Email Address Processing</h3>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Important:</strong> Email addresses submitted for verification are processed solely for validation purposes and are not stored permanently on our servers.
+            </div>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-trash text-danger me-2"></i>Email addresses are deleted immediately after verification</li>
+                <li class="mb-2"><i class="fas fa-lock text-success me-2"></i>All data transmission is encrypted using industry-standard SSL</li>
+                <li class="mb-2"><i class="fas fa-ban text-warning me-2"></i>We never sell, rent, or share your email lists with third parties</li>
+            </ul>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">5. Data Sharing and Disclosure</h3>
+            <p>We do not sell, trade, or otherwise transfer your personal information to third parties except in the following circumstances:</p>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-credit-card text-info me-2"></i><strong>Payment Processing:</strong> Payment information is securely processed by Paddle</li>
+                <li class="mb-2"><i class="fas fa-gavel text-warning me-2"></i><strong>Legal Requirements:</strong> When required by law or to protect our rights</li>
+                <li class="mb-2"><i class="fas fa-handshake text-secondary me-2"></i><strong>Service Providers:</strong> Trusted partners who assist in operating our service</li>
+            </ul>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">6. Data Security</h3>
+            <p>We implement appropriate security measures to protect your information:</p>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-shield-alt text-success me-2"></i>SSL encryption for all data transmission</li>
+                <li class="mb-2"><i class="fas fa-database text-success me-2"></i>Secure database storage with regular backups</li>
+                <li class="mb-2"><i class="fas fa-key text-success me-2"></i>Access controls and authentication mechanisms</li>
+                <li class="mb-2"><i class="fas fa-eye text-success me-2"></i>Regular security audits and monitoring</li>
+            </ul>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">7. Data Retention</h3>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-user-clock text-info me-2"></i><strong>Account Information:</strong> Retained while your account is active</li>
+                <li class="mb-2"><i class="fas fa-envelope-open text-warning me-2"></i><strong>Email Addresses:</strong> Deleted immediately after verification</li>
+                <li class="mb-2"><i class="fas fa-chart-line text-secondary me-2"></i><strong>Usage Statistics:</strong> Aggregated data retained for service improvement</li>
+                <li class="mb-2"><i class="fas fa-receipt text-primary me-2"></i><strong>Payment Records:</strong> Retained for legal and accounting purposes</li>
+            </ul>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">8. Your Rights</h3>
+            <p>You have the following rights regarding your personal information:</p>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-eye text-info me-2"></i><strong>Access:</strong> Request a copy of your personal information</li>
+                <li class="mb-2"><i class="fas fa-edit text-warning me-2"></i><strong>Correction:</strong> Request correction of inaccurate information</li>
+                <li class="mb-2"><i class="fas fa-trash text-danger me-2"></i><strong>Deletion:</strong> Request deletion of your personal information</li>
+                <li class="mb-2"><i class="fas fa-ban text-secondary me-2"></i><strong>Objection:</strong> Object to processing of your information</li>
+                <li class="mb-2"><i class="fas fa-download text-success me-2"></i><strong>Portability:</strong> Request transfer of your data</li>
+            </ul>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">9. Cookies and Tracking</h3>
+            <p>We use cookies and similar technologies to:</p>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-cog text-info me-2"></i>Maintain your login session</li>
+                <li class="mb-2"><i class="fas fa-chart-bar text-warning me-2"></i>Understand service usage patterns</li>
+                <li class="mb-2"><i class="fas fa-user-cog text-secondary me-2"></i>Remember your preferences</li>
+                <li class="mb-2"><i class="fas fa-shield-alt text-success me-2"></i>Enhance security measures</li>
+            </ul>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">10. International Data Transfers</h3>
+            <p>Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place to protect your information during such transfers.</p>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">11. Children's Privacy</h3>
+            <p>Our service is not intended for individuals under the age of 18. We do not knowingly collect personal information from children under 18.</p>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">12. Changes to Privacy Policy</h3>
+            <p>We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new Privacy Policy on this page and updating the "Last updated" date.</p>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">13. Contact Us</h3>
+            <p>If you have any questions about this Privacy Policy or wish to exercise your rights, please contact us through our <a href="/support" class="text-decoration-none" style="color: #667eea;">Support page</a>.</p>
+
+            <div class="alert alert-success mt-4">
+                <i class="fas fa-lock me-2"></i>
+                <strong>Your Privacy Matters:</strong> We are committed to protecting your privacy and handling your data responsibly. This policy ensures transparency in how we collect, use, and protect your information.
+            </div>
+        </div>
+    </div>
+</div>

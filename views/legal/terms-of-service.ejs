@@ -1,0 +1,78 @@
+<%
+var title = 'Terms of Service';
+var activePage = 'terms';
+%>
+
+<div class="card">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold" style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            <i class="fas fa-file-contract me-2"></i>Terms of Service
+        </h2>
+        <p class="text-muted">Last updated: <%= new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <h3 class="h5 fw-bold text-primary mb-3">1. Acceptance of Terms</h3>
+            <p>By accessing and using Bulk Email Verifier ("Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.</p>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">2. Description of Service</h3>
+            <p>Bulk Email Verifier is an email verification service that helps users validate email addresses for accuracy and deliverability. The service is provided on a credit-based system where users purchase credits to verify email addresses.</p>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">3. User Account</h3>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>You must provide accurate and complete information when creating an account</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>You are responsible for maintaining the confidentiality of your account credentials</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>You are responsible for all activities that occur under your account</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>You must notify us immediately of any unauthorized use of your account</li>
+            </ul>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">4. Credit System and Payments</h3>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-coins text-warning me-2"></i>Credits are purchased through our secure payment system powered by Paddle</li>
+                <li class="mb-2"><i class="fas fa-coins text-warning me-2"></i>Credits are non-transferable and non-refundable except as specified in our Refund Policy</li>
+                <li class="mb-2"><i class="fas fa-coins text-warning me-2"></i>Credits expire 12 months from the date of purchase</li>
+                <li class="mb-2"><i class="fas fa-coins text-warning me-2"></i>Each email verification consumes one credit</li>
+            </ul>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">5. Acceptable Use</h3>
+            <p class="mb-2">You agree not to use the service to:</p>
+            <ul class="list-unstyled">
+                <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Verify email addresses for spam or unsolicited marketing purposes</li>
+                <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Harvest or collect email addresses without proper consent</li>
+                <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Violate any applicable laws or regulations</li>
+                <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Interfere with or disrupt the service or servers</li>
+                <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Use automated systems to abuse or overload the service</li>
+            </ul>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">6. Service Availability</h3>
+            <p>We strive to maintain 99.9% uptime but cannot guarantee uninterrupted service. We may temporarily suspend the service for maintenance, updates, or other operational reasons with reasonable notice when possible.</p>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">7. Data Processing and Privacy</h3>
+            <p>Email addresses submitted for verification are processed solely for the purpose of validation. We do not store, sell, or use submitted email addresses for any other purpose. Please refer to our Privacy Policy for detailed information about data handling.</p>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">8. Intellectual Property</h3>
+            <p>The service, including its original content, features, and functionality, is owned by Bulk Email Verifier and is protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.</p>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">9. Limitation of Liability</h3>
+            <p>In no event shall Bulk Email Verifier be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your use of the service.</p>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">10. Termination</h3>
+            <p>We may terminate or suspend your account and access to the service immediately, without prior notice, for conduct that we believe violates these Terms of Service or is harmful to other users, us, or third parties, or for any other reason.</p>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">11. Changes to Terms</h3>
+            <p>We reserve the right to modify these terms at any time. We will notify users of any material changes via email or through the service. Continued use of the service after changes constitutes acceptance of the new terms.</p>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">12. Governing Law</h3>
+            <p>These Terms shall be interpreted and governed by the laws of the jurisdiction in which our company is registered, without regard to its conflict of law provisions.</p>
+
+            <h3 class="h5 fw-bold text-primary mb-3 mt-4">13. Contact Information</h3>
+            <p>If you have any questions about these Terms of Service, please contact us through our <a href="/support" class="text-decoration-none" style="color: #667eea;">Support page</a>.</p>
+
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Important:</strong> By using our service, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
+            </div>
+        </div>
+    </div>
+</div>

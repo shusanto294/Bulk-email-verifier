@@ -348,10 +348,7 @@
                 font-size: 2rem;
             }
             
-            .nav-links {
-                flex-direction: column;
-                gap: 0.25rem;
-            }
+
             
             .nav-links a {
                 width: 100%;
@@ -744,6 +741,10 @@
                 height: 70px;
                 font-size: 1.8rem;
             }
+            h1.logo {
+                text-align: center;
+                margin-bottom: 30px !important;
+            }
         }
 
         @media (max-width: 576px) {
@@ -756,6 +757,17 @@
                 font-size: 1rem;
             }
         }
+
+        .footer-links{
+            display: flex;
+            column-gap: 20px;
+            row-gap: 20px;
+            justify-content: center;
+        }
+
+        .footer-links a{
+            color: #000 !Important;
+        }
     </style>
     <%- include('../partials/head') %>
 </head>
@@ -765,7 +777,7 @@
         <div class="header">
             <div class="row align-items-center">
                 <div class="col-md-5">
-                    <h1 class="mb-0">
+                    <h1 class="mb-0 logo">
                         <a href="/" style="color: white; text-decoration: none;">
                             <i class="fas fa-envelope-open-text me-2"></i>Bulk Email Verifier
                         </a>
@@ -817,6 +829,17 @@
         <!-- Footer -->
         <div class="footer mt-5">
             <div class="text-center">
+                <div class="mb-3 footer-links">
+                    <a href="/legal/terms-of-service">
+                       Terms of Service
+                    </a>
+                    <a href="/legal/privacy-policy">
+                      Privacy Policy
+                    </a>
+                    <a href="/legal/refund-policy">
+                       Refund Policy
+                    </a>
+                </div>
                 <p class="mb-0" style="color: #718096; font-size: 0.9rem;">
                     <i class="fas fa-code me-1"></i>Developed by 
                     <a href="https://bdwebguy.com" target="_blank" style="color: #667eea; text-decoration: none; font-weight: 600;">

@@ -8,6 +8,7 @@ const uploadRoutes = require('./routes/upload');
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
 const paymentRoutes = require('./routes/payments');
+const supportRoutes = require('./routes/support');
 const { getCurrentUser } = require('./middleware/auth');
 
 const app = express();
@@ -67,6 +68,7 @@ app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/upload', uploadRoutes);
+app.use('/support', supportRoutes);
 app.use('/api', require('./routes/api'));
 
 // Home route - show homepage for all users (authenticated and non-authenticated)

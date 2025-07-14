@@ -1,0 +1,138 @@
+<!-- Email Verification Result Page -->
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <% if (success) { %>
+                        <div class="mb-4">
+                            <i class="fas fa-check-circle fa-4x text-success"></i>
+                        </div>
+                        <h2 class="text-success mb-3">Email Verified!</h2>
+                    <% } else { %>
+                        <div class="mb-4">
+                            <i class="fas fa-times-circle fa-4x text-danger"></i>
+                        </div>
+                        <h2 class="text-danger mb-3">Verification Failed</h2>
+                    <% } %>
+                </div>
+
+                <div class="alert <%= success ? 'alert-success' : 'alert-danger' %> text-center">
+                    <i class="fas <%= success ? 'fa-info-circle' : 'fa-exclamation-triangle' %> me-2"></i>
+                    <%= message %>
+                </div>
+
+                <div class="text-center mt-4">
+                    <% if (success) { %>
+                        <a href="/auth/login" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login to Your Account
+                        </a>
+                    <% } else { %>
+                        <div class="d-grid gap-2">
+                            <a href="/auth/login" class="btn btn-primary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Login
+                            </a>
+                            <button type="button" class="btn btn-outline-primary" onclick="showResendForm()">
+                                <i class="fas fa-envelope me-2"></i>Resend Verification Email
+                            </button>
+                        </div>
+                        
+                        <!-- Resend Email Form (hidden by default) -->
+                        <div id="resendForm" class="mt-4" style="display: none;">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Resend Verification Email</h6>
+                                    <form id="resendVerificationForm">
+                                        <div class="mb-3">
+                                            <input type="email" class="form-control" id="resendEmail" placeholder="Enter your email address" required>
+                                        </div>
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-paper-plane me-2"></i>Send Verification Email
+                                            </button>
+                                            <button type="button" class="btn btn-secondary" onclick="hideResendForm()">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </form>
+                                    <div id="resendMessage" class="mt-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div class="text-center mt-4">
+                    <small class="text-muted">
+                        Need help? <a href="mailto:support@bulkemailverifier.com">Contact Support</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<% if (!success) { %>
+<script>
+function showResendForm() {
+    document.getElementById('resendForm').style.display = 'block';
+}
+
+function hideResendForm() {
+    document.getElementById('resendForm').style.display = 'none';
+    document.getElementById('resendMessage').innerHTML = '';
+}
+
+document.getElementById('resendVerificationForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('resendEmail').value;
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const messageDiv = document.getElementById('resendMessage');
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+    messageDiv.innerHTML = '';
+    
+    try {
+        const response = await fetch('/auth/resend-verification', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: email })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            messageDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-check me-2"></i>
+                    Verification email sent successfully! Please check your inbox.
+                </div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${result.error}
+                </div>
+            `;
+        }
+    } catch (error) {
+        messageDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Failed to send verification email. Please try again.
+            </div>
+        `;
+    } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Send Verification Email';
+    }
+});
+</script>
+<% } %>

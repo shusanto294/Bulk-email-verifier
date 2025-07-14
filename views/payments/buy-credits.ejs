@@ -1,119 +1,113 @@
 <!-- Pricing Table Section -->
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="text-center mb-5">
-            <h2 class="mb-3">
-                <i class="fas fa-coins me-2"></i>Choose Your Credit Package
+<div class="pricing-section">
+    <div class="container pricing-container">
+        <div class="pricing-header">
+            <h2>
+                <i class="fas fa-coins me-2"></i>Bulk Verification Creadits
             </h2>
-            <p class="text-muted">Select the perfect credit package for your email verification needs</p>
-            
-            <!-- Debug Info -->
-            <div class="alert alert-info">
-                <small>
-                    <strong>Debug Info:</strong><br>
-                    Seller ID: <%= process.env.PADDLE_VENDOR_ID %><br>
-                    Environment: <%= process.env.NODE_ENV === 'production' ? 'production' : 'sandbox' %><br>
-                    10K Price ID: <%= process.env.PADDLE_PRODUCT_10K %><br>
-                    50K Price ID: <%= process.env.PADDLE_PRODUCT_50K %><br>
-                    100K Price ID: <%= process.env.PADDLE_PRODUCT_100K %>
-                </small>
-            </div>
+            <p>Select the perfect credit package for your email verification needs</p>
         </div>
         
+        <!-- Current Balance Display -->
+        <div class="balance-display mb-5">
+            <h6>
+                <i class="fas fa-wallet me-2"></i>Current Balance: 
+                <strong><span id="currentBalance"><%= user.credits %></span> Credits</strong>
+                <button class="btn btn-sm btn-outline-primary ms-2" onclick="refreshBalance()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </h6>
+        </div>
+            
+
 
         
-        <div class="row g-4">
+        <div class="pricing-grid">
             <!-- 10K Credits Package -->
-            <div class="col-lg-4 col-md-6">
-                <div class="pricing-card">
-                    <div class="pricing-header">
-                        <div class="package-icon">
-                            <i class="fas fa-rocket"></i>
-                        </div>
-                        <h3>Starter</h3>
-                        <div class="price">
-                            <span class="currency">$</span>
-                            <span class="amount">10</span>
-                        </div>
-                        <div class="credits">10,000 Credits</div>
-                        <div class="price-per-credit">$0.001 per credit</div>
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <div class="package-icon">
+                        <i class="fas fa-rocket"></i>
                     </div>
-                    <div class="pricing-features">
-                        <ul>
-                            <li><i class="fas fa-check"></i> Perfect for small lists</li>
-                            <li><i class="fas fa-check"></i> Fast verification</li>
-                            <li><i class="fas fa-check"></i> CSV export</li>
-                            <li><i class="fas fa-check"></i> Email support</li>
-                        </ul>
+                    <h3>Starter</h3>
+                    <div class="price">
+                        <span class="currency">$</span>
+                        <span class="amount">10</span>
                     </div>
-                    <div class="pricing-action">
-                        <button class="btn btn-primary w-100 buy-now-btn" data-package="10k" data-price="10" data-credits="10000">
-                            <i class="fas fa-shopping-cart me-2"></i>Buy Now
-                        </button>
-                    </div>
+                    <div class="credits">10,000 Credits</div>
+                    <div class="price-per-credit">$0.001 per credit</div>
+                </div>
+                <div class="pricing-features">
+                    <ul>
+                        <li><i class="fas fa-check"></i> Perfect for small lists</li>
+                        <li><i class="fas fa-check"></i> Fast verification</li>
+                        <li><i class="fas fa-check"></i> CSV export</li>
+                        <li><i class="fas fa-check"></i> Email support</li>
+                    </ul>
+                </div>
+                <div class="pricing-action">
+                    <button class="btn w-100 buy-credits-btn" data-package="10k" data-price="10" data-credits="10000">
+                        <i class="fas fa-shopping-cart me-2"></i>Buy Credits
+                    </button>
                 </div>
             </div>
 
             <!-- 50K Credits Package -->
-            <div class="col-lg-4 col-md-6">
-                <div class="pricing-card featured">
-                    <div class="popular-badge">Most Popular</div>
-                    <div class="pricing-header">
-                        <div class="package-icon">
-                            <i class="fas fa-crown"></i>
-                        </div>
-                        <h3>Professional</h3>
-                        <div class="price">
-                            <span class="currency">$</span>
-                            <span class="amount">45</span>
-                        </div>
-                        <div class="credits">50,000 Credits</div>
-                        <div class="price-per-credit">$0.0009 per credit</div>
+            <div class="pricing-card featured">
+                <div class="popular-badge">Most Popular</div>
+                <div class="pricing-header">
+                    <div class="package-icon">
+                        <i class="fas fa-crown"></i>
                     </div>
-                    <div class="pricing-features">
-                        <ul>
-                            <li><i class="fas fa-check"></i> Great for medium lists</li>
-                            <li><i class="fas fa-check"></i> Priority processing</li>
-                            <li><i class="fas fa-check"></i> Advanced reports</li>
-                            <li><i class="fas fa-check"></i> Priority support</li>
-                        </ul>
+                    <h3>Professional</h3>
+                    <div class="price">
+                        <span class="currency">$</span>
+                        <span class="amount">45</span>
                     </div>
-                    <div class="pricing-action">
-                        <button class="btn btn-primary w-100 buy-now-btn" data-package="50k" data-price="45" data-credits="50000">
-                            <i class="fas fa-shopping-cart me-2"></i>Buy Now
-                        </button>
-                    </div>
+                    <div class="credits">50,000 Credits</div>
+                    <div class="price-per-credit">$0.0009 per credit</div>
+                </div>
+                <div class="pricing-features">
+                    <ul>
+                        <li><i class="fas fa-check"></i> Great for medium lists</li>
+                        <li><i class="fas fa-check"></i> Priority processing</li>
+                        <li><i class="fas fa-check"></i> Advanced reports</li>
+                        <li><i class="fas fa-check"></i> Priority support</li>
+                    </ul>
+                </div>
+                <div class="pricing-action">
+                    <button class="btn w-100 buy-credits-btn" data-package="50k" data-price="45" data-credits="50000">
+                        <i class="fas fa-shopping-cart me-2"></i>Buy Credits
+                    </button>
                 </div>
             </div>
 
             <!-- 100K Credits Package -->
-            <div class="col-lg-4 col-md-6">
-                <div class="pricing-card">
-                    <div class="pricing-header">
-                        <div class="package-icon">
-                            <i class="fas fa-gem"></i>
-                        </div>
-                        <h3>Enterprise</h3>
-                        <div class="price">
-                            <span class="currency">$</span>
-                            <span class="amount">85</span>
-                        </div>
-                        <div class="credits">100,000 Credits</div>
-                        <div class="price-per-credit">$0.00085 per credit</div>
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <div class="package-icon">
+                        <i class="fas fa-gem"></i>
                     </div>
-                    <div class="pricing-features">
-                        <ul>
-                            <li><i class="fas fa-check"></i> Perfect for large lists</li>
-                            <li><i class="fas fa-check"></i> Fastest processing</li>
-                            <li><i class="fas fa-check"></i> Detailed analytics</li>
-                            <li><i class="fas fa-check"></i> Dedicated support</li>
-                        </ul>
+                    <h3>Enterprise</h3>
+                    <div class="price">
+                        <span class="currency">$</span>
+                        <span class="amount">85</span>
                     </div>
-                    <div class="pricing-action">
-                        <button class="btn btn-primary w-100 buy-now-btn" data-package="100k" data-price="85" data-credits="100000">
-                            <i class="fas fa-shopping-cart me-2"></i>Buy Now
-                        </button>
-                    </div>
+                    <div class="credits">100,000 Credits</div>
+                    <div class="price-per-credit">$0.00085 per credit</div>
+                </div>
+                <div class="pricing-features">
+                    <ul>
+                        <li><i class="fas fa-check"></i> Perfect for large lists</li>
+                        <li><i class="fas fa-check"></i> Fastest processing</li>
+                        <li><i class="fas fa-check"></i> Detailed analytics</li>
+                        <li><i class="fas fa-check"></i> Dedicated support</li>
+                    </ul>
+                </div>
+                <div class="pricing-action">
+                    <button class="btn w-100 buy-credits-btn" data-package="100k" data-price="85" data-credits="100000">
+                        <i class="fas fa-shopping-cart me-2"></i>Buy Credits
+                    </button>
                 </div>
             </div>
         </div>
@@ -135,154 +129,6 @@
     </div>
 </div>
 
-<style>
-    .pricing-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        border-radius: var(--border-radius);
-        padding: 2rem;
-        text-align: center;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-        height: 100%;
-    }
-
-    .pricing-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: var(--primary-gradient);
-    }
-
-    .pricing-card:hover {
-        transform: translateY(-8px);
-        box-shadow: var(--shadow-lg);
-        border-color: rgba(102, 126, 234, 0.3);
-    }
-
-    .pricing-card.featured {
-        border-color: rgba(102, 126, 234, 0.5);
-        transform: scale(1.05);
-        box-shadow: var(--shadow-md);
-    }
-
-    .pricing-card.featured:hover {
-        transform: scale(1.05) translateY(-8px);
-    }
-
-    .popular-badge {
-        position: absolute;
-        top: -10px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: var(--success-gradient);
-        color: white;
-        padding: 0.5rem 1.5rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        z-index: 10;
-    }
-
-    .package-icon {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: var(--primary-gradient);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        font-size: 2rem;
-        color: white;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .pricing-header h3 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        color: #2d3748;
-    }
-
-    .price {
-        margin-bottom: 0.5rem;
-    }
-
-    .price .currency {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #667eea;
-        vertical-align: top;
-    }
-
-    .price .amount {
-        font-size: 3rem;
-        font-weight: 700;
-        color: #667eea;
-        line-height: 1;
-    }
-
-    .credits {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #2d3748;
-        margin-bottom: 0.5rem;
-    }
-
-    .price-per-credit {
-        font-size: 0.9rem;
-        color: #718096;
-        margin-bottom: 2rem;
-    }
-
-    .pricing-features {
-        margin-bottom: 2rem;
-    }
-
-    .pricing-features ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .pricing-features li {
-        padding: 0.5rem 0;
-        color: #4a5568;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .pricing-features li i {
-        color: #48bb78;
-        margin-right: 0.5rem;
-        font-weight: bold;
-    }
-
-    .pricing-action .btn {
-        padding: 1rem 2rem;
-        font-weight: 600;
-        border-radius: var(--border-radius-sm);
-    }
-
-    @media (max-width: 768px) {
-        .pricing-card.featured {
-            transform: none;
-        }
-        
-        .pricing-card.featured:hover {
-            transform: translateY(-8px);
-        }
-    }
-</style>
 
 <!-- All JavaScript in one place -->
 <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
@@ -361,10 +207,72 @@
                     
                     // Handle specific events for Paddle Billing
                     if (data.name === 'checkout.completed') {
-                        console.log('✅ Checkout completed:', data);
-                        // Redirect to success page
+                        console.log('Payment completed successfully');
+                        
+                        // Extract transaction data
                         const transactionId = data.data?.transaction_id || data.data?.id || 'unknown';
-                        window.location.href = '/payments/success?transaction_id=' + transactionId;
+                        const customData = data.data?.custom_data;
+                        const userId = customData?.user_id;
+                        const packageType = customData?.package_type;
+                        
+                        // Try to save payment method information
+                        console.log('Attempting to save payment method from checkout data:', data);
+                        savePaymentMethodFromCheckout(data).catch(error => {
+                            console.error('Failed to save payment method:', error);
+                        });
+                        
+                        // Trigger webhook processing to add credits based on package type
+                        const packagePricing = {
+                            '10k': { amount: 10, credits: 10000 },
+                            '50k': { amount: 45, credits: 50000 },
+                            '100k': { amount: 85, credits: 100000 }
+                        };
+                        
+                        const packageInfo = packagePricing[packageType];
+                        const amountInCents = packageInfo ? packageInfo.amount * 100 : 0;
+                        
+                        const webhookPayload = {
+                            event_type: 'transaction.completed',
+                            data: {
+                                id: transactionId,
+                                details: {
+                                    totals: {
+                                        total: amountInCents // Amount in cents
+                                    }
+                                },
+                                totals: {
+                                    total: amountInCents // Fallback
+                                },
+                                custom_data: {
+                                    user_id: userId,
+                                    package_type: packageType
+                                }
+                            }
+                        };
+
+                        // Try webhook first, then fallback to direct credit addition
+                        fetch('/payments/webhook', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(webhookPayload)
+                        }).then(response => response.json())
+                        .then(result => {
+                            if (result.success) {
+                                console.log('Credits processed successfully via webhook');
+                            } else {
+                                console.log('Webhook failed, trying direct credit addition');
+                                return fallbackCreditAddition(packageType, transactionId);
+                            }
+                        }).catch(error => {
+                            console.error('Webhook failed:', error);
+                            console.log('Trying direct credit addition');
+                            return fallbackCreditAddition(packageType, transactionId);
+                        });
+                        
+                        // Redirect to success page
+                        setTimeout(() => {
+                            window.location.href = '/payments/success?transaction_id=' + transactionId;
+                        }, 2000);
                     }
                     
                     if (data.name === 'checkout.error') {
@@ -449,36 +357,52 @@
             console.log('✅ Test button listener added');
         }
         
-        // Add click event listeners to all buy now buttons
-        const buyButtons = document.querySelectorAll('.buy-now-btn');
-        console.log('Found', buyButtons.length, 'buy buttons');
+        // Add click event listeners to all buy credits buttons
+        const buyButtons = document.querySelectorAll('.buy-credits-btn');
+        console.log('Found', buyButtons.length, 'buy credits buttons');
         
         buyButtons.forEach((button, index) => {
             button.addEventListener('click', async function(e) {
                 e.preventDefault();
                 
                 const packageType = this.getAttribute('data-package');
-                const price = this.getAttribute('data-price');
-                const credits = this.getAttribute('data-credits');
-                
-                console.log('Button clicked:', { packageType, price, credits });
+                console.log('🔒 SECURE: Buy Credits button clicked for package:', packageType);
                 
                 try {
-                    await openPaddleCheckout(packageType, price, credits);
+                    await handleBuyCredits(packageType);
                 } catch (error) {
-                    console.error('Failed to open checkout:', error);
+                    console.error('Failed to process purchase:', error);
                     showError(error.message);
                 }
             });
         });
         
+        // Update button text based on saved payment methods
+        updateButtonText();
+        
         console.log('✅ Event listeners added successfully');
     }
 
-    async function openPaddleCheckout(packageType, price, credits) {
+    // Update button text based on saved payment methods
+    async function updateButtonText() {
         try {
-            console.log('=== openPaddleCheckout START ===');
-            console.log('Parameters:', { packageType, price, credits });
+            const buyButtons = document.querySelectorAll('.buy-credits-btn');
+            
+            // Always keep buttons with static text
+            buyButtons.forEach(button => {
+                button.innerHTML = `<i class="fas fa-shopping-cart me-2"></i>Buy Credits`;
+            });
+            
+            console.log('✅ Button text set to static');
+        } catch (error) {
+            console.error('Error updating button text:', error);
+        }
+    }
+
+    async function openPaddleCheckout(packageType) {
+        try {
+            console.log('=== SECURE openPaddleCheckout START ===');
+            console.log('🔒 SECURE: Package type only:', packageType);
             
             // Check if Paddle is initialized
             if (!paddleInitialized) {
@@ -490,17 +414,16 @@
                 loadingModal.show();
             }
 
-            // Create checkout session
-            console.log('Creating checkout session...');
+            // Create checkout session - SECURE: only send package type
+            console.log('🔒 Creating SECURE checkout session...');
             const response = await fetch('/payments/create-paddle-checkout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    package: packageType,
-                    price: price,
-                    credits: credits
+                    package: packageType
+                    // SECURITY: No price or credits from frontend
                 })
             });
 
@@ -572,6 +495,430 @@
         }
         console.log('=== openPaddleCheckout END ===');
     }
+
+    // Handle buy credits - check for saved payment methods first
+    async function handleBuyCredits(packageType) {
+        try {
+            console.log('🛒 Handling buy credits for package:', packageType);
+            
+            // Get saved payment methods
+            const response = await fetch('/payments/saved-methods');
+            const result = await response.json();
+            
+            // If we have saved payment methods, use the default one automatically
+            if (result.success && result.paymentMethods && result.paymentMethods.length > 0) {
+                console.log('💳 Found saved payment methods:', result.paymentMethods.length);
+                
+                // Find the default payment method
+                const defaultMethod = result.paymentMethods.find(method => method.isDefault);
+                
+                if (defaultMethod) {
+                    console.log('✅ Using default payment method:', defaultMethod._id);
+                    await processPaymentWithSavedMethod(packageType, defaultMethod._id);
+                } else {
+                    // If no default, set the first one as default and use it
+                    console.log('📝 No default method found, setting first available as default:', result.paymentMethods[0]._id);
+                    
+                    // Set the first method as default
+                    try {
+                        await fetch(`/payments/saved-methods/${result.paymentMethods[0]._id}/default`, {
+                            method: 'POST'
+                        });
+                        console.log('✅ Set first payment method as default');
+                    } catch (error) {
+                        console.error('Failed to set default, proceeding anyway:', error);
+                    }
+                    
+                    await processPaymentWithSavedMethod(packageType, result.paymentMethods[0]._id);
+                }
+            } else {
+                // No saved payment methods, open regular checkout
+                console.log('🆕 No saved payment methods found, opening new payment checkout');
+                await openPaddleCheckout(packageType);
+            }
+            
+        } catch (error) {
+            console.error('Error handling buy credits:', error);
+            // Fallback to regular checkout if saved payment check fails
+            console.log('🔄 Falling back to regular checkout');
+            await openPaddleCheckout(packageType);
+        }
+    }
+
+    // Show saved payment method selector (SECURE)
+    async function showSavedPaymentMethodSelector(packageType) {
+        try {
+            // Get saved payment methods
+            const response = await fetch('/payments/saved-methods');
+            const result = await response.json();
+
+            if (!result.success || !result.paymentMethods || result.paymentMethods.length === 0) {
+                showError('No saved payment methods found');
+                return;
+            }
+
+            // If there's only one method, use it directly
+            if (result.paymentMethods.length === 1) {
+                await processPaymentWithSavedMethod(packageType, result.paymentMethods[0]._id);
+                return;
+            }
+
+            // Create a proper modal for multiple payment methods
+            const modalHTML = `
+                <div class="modal fade" id="paymentMethodModal" tabindex="-1" aria-labelledby="paymentMethodModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="paymentMethodModalLabel">
+                                    <i class="fas fa-bookmark me-2"></i>Select Payment Method
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="text-muted mb-3">Choose a saved payment method for your purchase:</p>
+                                <div class="list-group">
+                                    ${result.paymentMethods.map(method => {
+                                        const icon = method.type === 'card' ? 'fas fa-credit-card' : 
+                                                   method.type === 'paypal' ? 'fab fa-paypal' : 'fas fa-university';
+                                        const details = method.type === 'card' ? `${method.details.brand ? method.details.brand.toUpperCase() : 'Card'} Payment` :
+                                                       method.type === 'paypal' ? method.details.email :
+                                                       method.details.bankName;
+                                        const badge = method.isDefault ? '<span class="badge bg-success ms-2">Default</span>' : '';
+                                        const extraInfo = method.type === 'card' ? 
+                                                         `Saved card ending in ${method.details.last4}` :
+                                                         method.type === 'paypal' ? 'PayPal Account' : 'Bank Transfer';
+                                        
+                                        return `
+                                            <button class="list-group-item list-group-item-action saved-method-option" 
+                                                    data-method-id="${method._id}" 
+                                                    style="border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 8px;">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="me-3">
+                                                        <i class="${icon} fa-lg text-primary"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <div class="fw-semibold">${details} ${badge}</div>
+                                                        <small class="text-muted">${extraInfo}</small>
+                                                    </div>
+                                                    ${method.isDefault ? '<i class="fas fa-star text-warning"></i>' : ''}
+                                                </div>
+                                            </button>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Remove existing modal if any
+            const existingModal = document.getElementById('paymentMethodModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // Add modal to body
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('paymentMethodModal'));
+            modal.show();
+
+            // Add click handlers to payment method options
+            document.querySelectorAll('.saved-method-option').forEach(option => {
+                option.addEventListener('click', async function() {
+                    const methodId = this.getAttribute('data-method-id');
+                    modal.hide();
+                    
+                    // Remove modal from DOM after hiding
+                    setTimeout(() => {
+                        const modalElement = document.getElementById('paymentMethodModal');
+                        if (modalElement) modalElement.remove();
+                    }, 300);
+                    
+                    await processPaymentWithSavedMethod(packageType, methodId);
+                });
+            });
+
+        } catch (error) {
+            console.error('Error showing saved payment methods:', error);
+            showError('Failed to load saved payment methods');
+        }
+    }
+
+    // Process payment with saved method directly (SECURE)
+    async function processPaymentWithSavedMethod(packageType, savedMethodId) {
+        try {
+            if (loadingModal) {
+                loadingModal.show();
+            }
+
+            console.log('🔒 SECURE: Processing direct payment with saved method:', { packageType, savedMethodId });
+
+            // Process payment directly without checkout form
+            const response = await fetch('/payments/process-saved-payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    package: packageType,
+                    savedPaymentMethodId: savedMethodId
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to process payment: ${errorText}`);
+            }
+
+            const result = await response.json();
+            console.log('Direct payment result:', result);
+
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to process payment');
+            }
+
+            // Payment processed successfully
+            console.log('✅ Payment processed successfully with saved method');
+            console.log(`💰 Credits added: ${result.creditsAdded}`);
+            console.log(`📊 New balance: ${result.newBalance}`);
+
+            // Hide loading modal
+            if (loadingModal) {
+                loadingModal.hide();
+            }
+
+            // Refresh balance display
+            if (typeof refreshBalance === 'function') {
+                await refreshBalance();
+            }
+
+            // Redirect to success page
+            setTimeout(() => {
+                window.location.href = '/payments/success?transaction_id=' + result.transactionId;
+            }, 1000);
+
+        } catch (error) {
+            console.error('Error processing payment with saved method:', error);
+            if (loadingModal) {
+                loadingModal.hide();
+            }
+            showError(error.message);
+        }
+    }
+
+    // Set default payment method
+    async function setDefaultPaymentMethod(methodId) {
+        try {
+            const response = await fetch(`/payments/saved-methods/${methodId}/default`, {
+                method: 'POST'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                location.reload(); // Refresh to show updated default
+            } else {
+                showError(result.error || 'Failed to set default payment method');
+            }
+        } catch (error) {
+            console.error('Error setting default payment method:', error);
+            showError('Failed to set default payment method');
+        }
+    }
+
+    // Delete payment method
+    async function deletePaymentMethod(methodId) {
+        if (!confirm('Are you sure you want to remove this payment method?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/payments/saved-methods/${methodId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                location.reload(); // Refresh to show updated list
+            } else {
+                showError(result.error || 'Failed to remove payment method');
+            }
+        } catch (error) {
+            console.error('Error deleting payment method:', error);
+            showError('Failed to remove payment method');
+        }
+    }
+
+    // Save payment method from checkout data
+    async function savePaymentMethodFromCheckout(checkoutData) {
+        try {
+            console.log('🔍 Full checkout data for payment method extraction:', JSON.stringify(checkoutData, null, 2));
+            
+            // Extract payment method information from Paddle checkout data
+            const paymentMethod = checkoutData.data?.payment_method;
+            const customerId = checkoutData.data?.customer_id || checkoutData.data?.customer?.id;
+            const transactionId = checkoutData.data?.transaction_id || checkoutData.data?.id;
+            
+            console.log('🔍 Extracted data:', {
+                paymentMethod: paymentMethod,
+                customerId: customerId,
+                transactionId: transactionId
+            });
+            
+            if (!customerId) {
+                console.log('❌ No customer ID found, cannot save payment method');
+                return;
+            }
+            
+            // For Paddle Billing, we might need to get payment method from transaction data
+            if (!paymentMethod) {
+                console.log('❌ No payment method found in checkout data, creating generic entry');
+                // Create a generic payment method entry based on transaction
+                const genericPaymentMethodData = {
+                    customerId: customerId,
+                    paymentMethodId: transactionId,
+                    type: 'card', // Default to card
+                    details: {
+                        last4: '****',
+                        brand: 'card'
+                    }
+                };
+                
+                // Send to backend to save
+                const response = await fetch('/payments/save-method', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(genericPaymentMethodData)
+                });
+                
+                const result = await response.json();
+                console.log('💾 Generic payment method save result:', result);
+                return;
+            }
+
+            // Prepare payment method data based on type
+            let paymentMethodData = {
+                customerId: customerId,
+                paymentMethodId: paymentMethod.id || transactionId,
+                type: paymentMethod.type || 'card'
+            };
+
+            // Extract details based on payment method type
+            if (paymentMethod.type === 'card') {
+                paymentMethodData.details = {
+                    last4: paymentMethod.card?.last_four || paymentMethod.last_four || '****',
+                    brand: paymentMethod.card?.brand || paymentMethod.brand || 'card',
+                    expiryMonth: paymentMethod.card?.expiry_month || paymentMethod.expiry_month,
+                    expiryYear: paymentMethod.card?.expiry_year || paymentMethod.expiry_year
+                };
+            } else if (paymentMethod.type === 'paypal') {
+                paymentMethodData.details = {
+                    email: paymentMethod.paypal?.email || '<%= user.email %>'
+                };
+            } else {
+                paymentMethodData.details = {
+                    type: paymentMethod.type
+                };
+            }
+
+            // Send to backend to save
+            const response = await fetch('/payments/save-method', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(paymentMethodData)
+            });
+
+        } catch (error) {
+            console.error('Error saving payment method:', error);
+        }
+    }
+
+    // Refresh balance function
+    async function refreshBalance() {
+        try {
+            const response = await fetch('/payments/balance');
+            const result = await response.json();
+            
+            if (result.success) {
+                document.getElementById('currentBalance').textContent = result.credits;
+            }
+        } catch (error) {
+            console.error('Error refreshing balance:', error);
+        }
+    }
+
+    // Global functions
+    window.refreshBalance = refreshBalance;
+    window.savePaymentMethodFromCheckout = savePaymentMethodFromCheckout;
+    window.setDefaultPaymentMethod = setDefaultPaymentMethod;
+    window.deletePaymentMethod = deletePaymentMethod;
     
-    console.log('✅ Script loaded successfully');
+    // Refresh balance function
+    async function refreshBalance() {
+        try {
+            const response = await fetch('/payments/balance');
+            const result = await response.json();
+            
+            if (result.success) {
+                document.getElementById('currentBalance').textContent = result.credits;
+                console.log('💰 Balance refreshed:', result.credits);
+            } else {
+                console.error('Failed to refresh balance:', result);
+            }
+        } catch (error) {
+            console.error('Error refreshing balance:', error);
+        }
+    }
+
+    // Fallback credit addition function
+    async function fallbackCreditAddition(packageType, transactionId) {
+        try {
+            console.log('🔄 Attempting direct credit addition:', { packageType, transactionId });
+            
+            const response = await fetch('/payments/add-credits', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    packageType: packageType,
+                    transactionId: transactionId
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('✅ Credits added successfully:', result);
+                console.log(`💰 Balance updated: ${result.oldBalance} → ${result.newBalance} (+${result.creditsAdded})`);
+                
+                // Refresh balance display
+                if (typeof refreshBalance === 'function') {
+                    await refreshBalance();
+                }
+            } else {
+                console.error('❌ Failed to add credits:', result.error);
+            }
+            
+            return result;
+        } catch (error) {
+            console.error('❌ Credit addition error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    window.refreshBalance = refreshBalance;
+    window.fallbackCreditAddition = fallbackCreditAddition;
+    window.handleBuyCredits = handleBuyCredits;
+    window.updateButtonText = updateButtonText;
+    console.log('✅ Payment system loaded successfully');
 </script> 

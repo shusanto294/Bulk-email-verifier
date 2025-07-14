@@ -8,6 +8,30 @@ const requireAuth = (req, res, next) => {
     next();
 };
 
+// Middleware to check if user is authenticated and email is verified
+const requireEmailVerified = async (req, res, next) => {
+    if (!req.session.userId) {
+        return res.redirect('/auth/login');
+    }
+    
+    try {
+        const user = await User.findById(req.session.userId);
+        if (!user) {
+            req.session.destroy();
+            return res.redirect('/auth/login?error=Account not found');
+        }
+        
+        if (!user.isEmailVerified) {
+            return res.redirect('/auth/login?error=Please verify your email address before accessing this page');
+        }
+        
+        next();
+    } catch (error) {
+        console.error('Email verification check error:', error);
+        res.status(500).send('Server Error');
+    }
+};
+
 // Middleware to check if user is not authenticated (for login/register pages)
 const requireGuest = (req, res, next) => {
     if (req.session.userId) {
@@ -56,6 +80,7 @@ const requireCredits = (amount = 1) => {
 
 module.exports = {
     requireAuth,
+    requireEmailVerified,
     requireGuest,
     getCurrentUser,
     requireCredits

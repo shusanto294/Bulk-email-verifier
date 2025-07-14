@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const Upload = require('../models/upload');
 const Email = require('../models/email');
-const { requireAuth } = require('../middleware/auth');
+const { requireEmailVerified } = require('../middleware/auth');
 
 // Get upload status - require authentication
-router.get('/uploads/:id/status', requireAuth, async (req, res) => {
+router.get('/uploads/:id/status', requireEmailVerified, async (req, res) => {
     try {
         const upload = await Upload.findOne({ _id: req.params.id, userId: req.user._id });
         if (!upload) return res.status(404).json({ error: 'Upload not found' });
@@ -40,7 +40,7 @@ router.get('/uploads/:id/status', requireAuth, async (req, res) => {
 });
 
 // Delete upload and associated emails - require authentication
-router.delete('/uploads/:id', requireAuth, async (req, res) => {
+router.delete('/uploads/:id', requireEmailVerified, async (req, res) => {
     try {
         const upload = await Upload.findOne({ _id: req.params.id, userId: req.user._id });
         if (!upload) return res.status(404).json({ error: 'Upload not found' });
@@ -59,7 +59,7 @@ router.delete('/uploads/:id', requireAuth, async (req, res) => {
 });
 
 // Get user credits
-router.get('/user/credits', requireAuth, async (req, res) => {
+router.get('/user/credits', requireEmailVerified, async (req, res) => {
     try {
         res.json({
             success: true,

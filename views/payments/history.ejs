@@ -1,0 +1,216 @@
+<!-- Payment History Page -->
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">
+                <i class="fas fa-history me-2"></i>Payment History
+            </h2>
+            <a href="/payments/buy-credits" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Buy More Credits
+            </a>
+        </div>
+
+        <% if (payments && payments.length > 0) { %>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Transaction ID</th>
+                            <th>Credits</th>
+                            <th>Amount</th>
+                            <th>Payment Method</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% payments.forEach(payment => { %>
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold"><%= payment.createdAt.toLocaleDateString() %></div>
+                                    <small class="text-muted"><%= payment.createdAt.toLocaleTimeString() %></small>
+                                </td>
+                                <td>
+                                    <code class="text-muted"><%= payment.paymentId %></code>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info fs-6">
+                                        <i class="fas fa-coins me-1"></i>
+                                        <%= payment.credits.toLocaleString() %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-success">$<%= payment.amount %></div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <% if (payment.paymentMethod === 'paddle') { %>
+                                            <i class="fas fa-credit-card me-2 text-primary"></i>
+                                        <% } else { %>
+                                            <i class="fas fa-payment me-2 text-secondary"></i>
+                                        <% } %>
+                                        <span class="text-capitalize"><%= payment.paymentMethod %></span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <% if (payment.status === 'confirmed') { %>
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Confirmed
+                                        </span>
+                                    <% } else if (payment.status === 'pending') { %>
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock me-1"></i>Pending
+                                        </span>
+                                    <% } else if (payment.status === 'failed') { %>
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times me-1"></i>Failed
+                                        </span>
+                                    <% } else { %>
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-question me-1"></i><%= payment.status %>
+                                        </span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (payment.status === 'confirmed' && payment.confirmedAt) { %>
+                                        <small class="text-success">
+                                            <i class="fas fa-check-circle me-1"></i>
+                                            <%= payment.confirmedAt.toLocaleDateString() %>
+                                        </small>
+                                    <% } else if (payment.status === 'pending') { %>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="checkPaymentStatus('<%= payment.paymentId %>')">
+                                            <i class="fas fa-sync me-1"></i>Check Status
+                                        </button>
+                                    <% } else { %>
+                                        <span class="text-muted">-</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Summary Statistics -->
+            <div class="row g-3 mt-4">
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="text-primary"><%= payments.length %></h5>
+                            <small class="text-muted">Total Transactions</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="text-success">
+                                $<%= payments.filter(p => p.status === 'confirmed').reduce((sum, p) => sum + p.amount, 0) %>
+                            </h5>
+                            <small class="text-muted">Total Spent</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="text-info">
+                                <%= payments.filter(p => p.status === 'confirmed').reduce((sum, p) => sum + p.credits, 0).toLocaleString() %>
+                            </h5>
+                            <small class="text-muted">Credits Purchased</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h5 class="text-warning">
+                                <%= payments.filter(p => p.status === 'confirmed').length %>
+                            </h5>
+                            <small class="text-muted">Successful Payments</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <% } else { %>
+            <!-- Empty State -->
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-receipt fa-4x text-muted"></i>
+                </div>
+                <h5 class="text-muted mb-3">No Payment History</h5>
+                <p class="text-muted mb-4">You haven't made any purchases yet. Start by buying your first credit package.</p>
+                <a href="/payments/buy-credits" class="btn btn-primary btn-lg">
+                    <i class="fas fa-shopping-cart me-2"></i>Buy Credits Now
+                </a>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+async function checkPaymentStatus(paymentId) {
+    try {
+        const response = await fetch(`/payments/status/${paymentId}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            // Refresh the page to show updated status
+            location.reload();
+        } else {
+            alert('Failed to check payment status: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error checking payment status:', error);
+        alert('Failed to check payment status. Please try again.');
+    }
+}
+</script>
+
+<style>
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+code {
+    font-size: 0.875em;
+    background-color: #f8f9fa;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+.card.bg-light {
+    border: 1px solid #e9ecef;
+}
+
+.card.bg-light .card-body {
+    padding: 1rem;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .d-flex.justify-content-between .btn {
+        align-self: stretch;
+    }
+}
+</style>

@@ -1,0 +1,252 @@
+<!-- User Info Section -->
+<% if (user) { %>
+<div class="user-info">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h4 class="mb-1"><i class="fas fa-user me-2"></i>Welcome, <%= user.firstName %> <%= user.lastName %></h4>
+            <p class="mb-0 text-muted"><i class="fas fa-envelope me-1"></i><%= user.email %></p>
+        </div>
+        <div class="col-md-4">
+            <div class="credit-display">
+                <h4><i class="fas fa-coins me-2"></i><%= user.credits || 0 %> Credits</h4>
+            </div>
+        </div>
+    </div>
+</div>
+<% } %>
+
+<!-- Support Content -->
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="text-center mb-4">
+                <div class="package-icon" style="background: var(--success-gradient);">
+                    <i class="fas fa-life-ring"></i>
+                </div>
+                <h2 class="mb-3">Customer Support</h2>
+                <p class="text-muted">
+                    We're here to help! Send us a message and we'll get back to you within 24 hours.
+                </p>
+            </div>
+
+            <form action="/support/contact" method="POST" id="contactForm" enctype="application/x-www-form-urlencoded">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-user me-1"></i>Full Name
+                        </label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="name" 
+                            name="name" 
+                            required
+                            <% if (user) { %>value="<%= user.firstName %> <%= user.lastName %>"<% } %>
+                        >
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope me-1"></i>Email Address
+                        </label>
+                        <input 
+                            type="email" 
+                            class="form-control" 
+                            id="email" 
+                            name="email" 
+                            required
+                            <% if (user) { %>value="<%= user.email %>"<% } %>
+                        >
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="subject" class="form-label">
+                        <i class="fas fa-tag me-1"></i>Subject
+                    </label>
+                    <select class="form-control" id="subject" name="subject" required>
+                        <option value="">Please select a subject</option>
+                        <option value="Technical Issue">Technical Issue</option>
+                        <option value="Payment & Billing">Payment & Billing</option>
+                        <option value="Feature Request">Feature Request</option>
+                        <option value="Account Access">Account Access</option>
+                        <option value="Data Export">Data Export</option>
+                        <option value="General Inquiry">General Inquiry</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="message" class="form-label">
+                        <i class="fas fa-comment-alt me-1"></i>Message
+                    </label>
+                    <textarea 
+                        class="form-control" 
+                        id="message" 
+                        name="message" 
+                        rows="6" 
+                        placeholder="Please describe your issue or question in detail..."
+                        required
+                    ></textarea>
+                    <div class="form-text">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Please include any relevant details such as error messages, upload IDs, or steps to reproduce the issue.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-paper-plane me-2"></i>Send Message
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Support Information -->
+<div class="row mt-4">
+    <div class="col-lg-4">
+        <div class="card text-center">
+            <div class="package-icon" style="background: var(--primary-gradient); width: 60px; height: 60px; font-size: 1.5rem;">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h5>Response Time</h5>
+            <p class="text-muted mb-0">We typically respond within 24 hours during business days.</p>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card text-center">
+            <div class="package-icon" style="background: var(--success-gradient); width: 60px; height: 60px; font-size: 1.5rem;">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <h5>Direct Email</h5>
+            <p class="text-muted mb-0">
+                You can also email us directly at 
+                <a href="mailto:shusanto@bdwebguy.com" style="color: var(--primary-color);">
+                    shusanto@bdwebguy.com
+                </a>
+            </p>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card text-center">
+            <div class="package-icon" style="background: var(--warning-gradient); width: 60px; height: 60px; font-size: 1.5rem;">
+                <i class="fas fa-question-circle"></i>
+            </div>
+            <h5>Common Issues</h5>
+            <p class="text-muted mb-0">Check our FAQ section for answers to frequently asked questions.</p>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <h3 class="text-center mb-4">
+                <i class="fas fa-question-circle me-2"></i>Frequently Asked Questions
+            </h3>
+            
+            <div class="accordion" id="faqAccordion">
+                <div class="accordion-item" style="border: none; margin-bottom: 1rem; border-radius: var(--border-radius-sm); overflow: hidden; box-shadow: var(--shadow-sm);">
+                    <h2 class="accordion-header" id="faq1">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
+                            How accurate is the email verification?
+                        </button>
+                    </h2>
+                    <div id="collapse1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Our email verification system has an accuracy rate of over 99.9%. We use multiple verification methods including syntax checking, domain validation, and mailbox verification to ensure the highest accuracy possible.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item" style="border: none; margin-bottom: 1rem; border-radius: var(--border-radius-sm); overflow: hidden; box-shadow: var(--shadow-sm);">
+                    <h2 class="accordion-header" id="faq2">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2">
+                            How long does verification take?
+                        </button>
+                    </h2>
+                    <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Verification time depends on the size of your list. Small lists (under 1,000 emails) typically process within a few minutes, while larger lists may take 30-60 minutes. You'll receive real-time updates on the progress.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item" style="border: none; margin-bottom: 1rem; border-radius: var(--border-radius-sm); overflow: hidden; box-shadow: var(--shadow-sm);">
+                    <h2 class="accordion-header" id="faq3">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3">
+                            What file formats do you support?
+                        </button>
+                    </h2>
+                    <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            We currently support CSV files with email addresses. Your CSV file should have email addresses in the first column or in a column labeled "email", "Email", or "EMAIL".
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item" style="border: none; margin-bottom: 1rem; border-radius: var(--border-radius-sm); overflow: hidden; box-shadow: var(--shadow-sm);">
+                    <h2 class="accordion-header" id="faq4">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4">
+                            How do credits work?
+                        </button>
+                    </h2>
+                    <div id="collapse4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Each email verification uses 1 credit. Credits never expire and can be used at any time. You can purchase credits in various packages to suit your needs. Volume discounts are available for larger packages.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item" style="border: none; margin-bottom: 1rem; border-radius: var(--border-radius-sm); overflow: hidden; box-shadow: var(--shadow-sm);">
+                    <h2 class="accordion-header" id="faq5">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse5">
+                            Is my data secure?
+                        </button>
+                    </h2>
+                    <div id="collapse5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Yes, we take data security very seriously. All data is encrypted in transit and at rest. We don't store your email lists permanently - they are automatically deleted after 30 days. We are fully GDPR compliant.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    
+    // Update button to show loading state
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+    submitBtn.disabled = true;
+    
+    // Allow the form to submit normally (POST request)
+    // No e.preventDefault() - let the form submit naturally
+    
+    // Re-enable button after 10 seconds in case of issues
+    setTimeout(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }, 10000);
+});
+
+// Prevent multiple form submissions
+let formSubmitted = false;
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    if (formSubmitted) {
+        e.preventDefault();
+        return false;
+    }
+    formSubmitted = true;
+});
+</script>

@@ -7,7 +7,7 @@ const path = require('path');
 const Upload = require('../models/upload');
 const Email = require('../models/email');
 const User = require('../models/user');
-const { requireAuth, requireCredits } = require('../middleware/auth');
+const { requireEmailVerified, requireCredits, requireAuth } = require('../middleware/auth');
 
 // Ensure uploads directory exists
 const uploadDir = 'uploads';
@@ -28,7 +28,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Upload form - require authentication
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireEmailVerified, async (req, res) => {
     try {
         const uploads = await Upload.find({ userId: req.user._id }).sort({ createdAt: -1 });
         
@@ -77,7 +77,7 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // File upload endpoint - require authentication and credits
-router.post('/upload-file', requireAuth, upload.single('csvFile'), async (req, res) => {
+router.post('/upload-file', requireEmailVerified, upload.single('csvFile'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
@@ -189,12 +189,12 @@ router.post('/upload-file', requireAuth, upload.single('csvFile'), async (req, r
 });
 
 // Old route kept for backward compatibility (can be removed later)
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', requireEmailVerified, async (req, res) => {
     return res.status(400).json({ error: 'Please use the file upload endpoint instead' });
 });
 
 // Mark upload as complete - require authentication
-router.post('/:id/complete', requireAuth, async (req, res) => {
+router.post('/:id/complete', requireEmailVerified, async (req, res) => {
     try {
         const upload = await Upload.findOne({ _id: req.params.id, userId: req.user._id });
         if (!upload) {
@@ -211,7 +211,7 @@ router.post('/:id/complete', requireAuth, async (req, res) => {
 });
 
 // Get upload details - require authentication
-router.get('/:id', requireAuth, async (req, res) => {
+router.get('/:id', requireEmailVerified, async (req, res) => {
     try {
         const perPage = 50;
         const page = req.query.page || 1;
@@ -268,7 +268,7 @@ router.get('/:id', requireAuth, async (req, res) => {
 });
 
 // Download CSV routes - require authentication
-router.get('/:id/download/:type', requireAuth, async (req, res) => {
+router.get('/:id/download/:type', requireEmailVerified, async (req, res) => {
     try {
         const { id, type } = req.params;
         const validTypes = ['all', 'verified', 'invalid', 'pending'];

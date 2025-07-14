@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema({
     username: {
@@ -32,6 +33,26 @@ const userSchema = new mongoose.Schema({
         default: true
     },
     lastLogin: {
+        type: Date,
+        default: null
+    },
+    isEmailVerified: {
+        type: Boolean,
+        default: false
+    },
+    emailVerificationToken: {
+        type: String,
+        default: null
+    },
+    emailVerificationExpires: {
+        type: Date,
+        default: null
+    },
+    verificationAttempts: {
+        type: Number,
+        default: 0
+    },
+    lastVerificationEmailSent: {
         type: Date,
         default: null
     }
@@ -70,6 +91,85 @@ userSchema.methods.deductCredits = async function(amount) {
 userSchema.methods.addCredits = async function(amount) {
     this.credits += amount;
     return this.save();
+};
+
+// Method to generate email verification token
+userSchema.methods.generateEmailVerificationToken = function() {
+    // Generate a secure random token
+    const token = crypto.randomBytes(32).toString('hex');
+    
+    // Set the token and expiration (24 hours)
+    this.emailVerificationToken = token;
+    this.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    this.lastVerificationEmailSent = new Date();
+    
+    return token;
+};
+
+// Method to verify email token
+userSchema.methods.verifyEmailToken = function(token) {
+    if (!this.emailVerificationToken || !this.emailVerificationExpires) {
+        return false;
+    }
+    
+    // Check if token has expired
+    if (Date.now() > this.emailVerificationExpires.getTime()) {
+        return false;
+    }
+    
+    // Check if token matches
+    if (this.emailVerificationToken !== token) {
+        return false;
+    }
+    
+    return true;
+};
+
+// Method to verify email
+userSchema.methods.verifyEmail = async function() {
+    this.isEmailVerified = true;
+    this.emailVerificationToken = null;
+    this.emailVerificationExpires = null;
+    this.verificationAttempts = 0;
+    return this.save();
+};
+
+// Method to check if user can receive verification email
+userSchema.methods.canReceiveVerificationEmail = function() {
+    const now = new Date();
+    const cooldownPeriod = 5 * 60 * 1000; // 5 minutes cooldown
+    
+    // Check if email is already verified
+    if (this.isEmailVerified) {
+        return { canSend: false, reason: 'Email is already verified' };
+    }
+    
+    // Check verification attempts limit (max 5 per day)
+    if (this.verificationAttempts >= 5) {
+        const daysSinceLastAttempt = this.lastVerificationEmailSent ? 
+            (now - this.lastVerificationEmailSent) / (24 * 60 * 60 * 1000) : 1;
+        
+        if (daysSinceLastAttempt < 1) {
+            return { canSend: false, reason: 'Too many verification attempts. Please try again tomorrow.' };
+        } else {
+            // Reset attempts after 24 hours
+            this.verificationAttempts = 0;
+        }
+    }
+    
+    // Check cooldown period
+    if (this.lastVerificationEmailSent) {
+        const timeSinceLastEmail = now - this.lastVerificationEmailSent;
+        if (timeSinceLastEmail < cooldownPeriod) {
+            const remainingTime = Math.ceil((cooldownPeriod - timeSinceLastEmail) / 60000);
+            return { 
+                canSend: false, 
+                reason: `Please wait ${remainingTime} minute(s) before requesting another verification email.` 
+            };
+        }
+    }
+    
+    return { canSend: true };
 };
 
 module.exports = mongoose.model('User', userSchema); 

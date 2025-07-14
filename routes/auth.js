@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
 const { requireGuest } = require('../middleware/auth');
+const emailVerificationService = require('../services/emailVerificationService');
 
 // Register page
 router.get('/register', requireGuest, (req, res) => {
@@ -46,6 +47,26 @@ router.post('/register', requireGuest, async (req, res) => {
             });
         }
 
+        // Validate email format and check for temporary emails
+        const emailValidation = emailVerificationService.validateEmail(email);
+        if (!emailValidation.isValid) {
+            return res.render('auth/register', { 
+                title: 'Register',
+                error: emailValidation.reason,
+                formData: req.body,
+                success: null
+            });
+        }
+
+        if (emailValidation.isTemporary) {
+            return res.render('auth/register', { 
+                title: 'Register',
+                error: 'Temporary or disposable email addresses are not allowed. Please use a permanent email address.',
+                formData: req.body,
+                success: null
+            });
+        }
+
         // Check if user already exists
         const existingUser = await User.findOne({
             $or: [{ email }, { username }]
@@ -69,11 +90,26 @@ router.post('/register', requireGuest, async (req, res) => {
 
         await user.save();
 
-        // Set session
-        req.session.userId = user._id;
-        req.session.username = user.username;
+        // Send verification email
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const emailResult = await emailVerificationService.sendVerificationEmail(user, baseUrl);
 
-        res.redirect('/dashboard?success=Account created successfully! You have 100 free credits to start.');
+        if (emailResult.success) {
+            res.render('auth/register', { 
+                title: 'Register',
+                error: null,
+                formData: null,
+                success: `Account created successfully! Please check your email (${email}) for a verification link. You must verify your email before you can log in.`
+            });
+        } else {
+            // If email sending fails, still create the account but show a warning
+            res.render('auth/register', { 
+                title: 'Register',
+                error: null,
+                formData: null,
+                success: `Account created successfully! However, we couldn't send the verification email. Please try to resend it from the login page.`
+            });
+        }
     } catch (error) {
         console.error('Registration error:', error);
         res.render('auth/register', { 
@@ -132,6 +168,19 @@ router.post('/login', requireGuest, async (req, res) => {
             });
         }
 
+        // Check if email is verified
+        if (!user.isEmailVerified) {
+            return res.render('auth/login', { 
+                title: 'Login',
+                error: 'Please verify your email address before logging in. Check your email for a verification link.',
+                formData: req.body,
+                success: null,
+                showResendLink: true,
+                userEmail: user.email,
+                userId: user._id
+            });
+        }
+
         // Update last login
         user.lastLogin = new Date();
         await user.save();
@@ -148,6 +197,149 @@ router.post('/login', requireGuest, async (req, res) => {
             error: 'Login failed. Please try again.',
             formData: req.body,
             success: null
+        });
+    }
+});
+
+// Email verification route
+router.get('/verify-email', async (req, res) => {
+    try {
+        const { token, id } = req.query;
+
+        if (!token || !id) {
+            return res.render('auth/verify-result', {
+                title: 'Email Verification',
+                success: false,
+                message: 'Invalid verification link. Please check your email for the correct link.'
+            });
+        }
+
+        const result = await emailVerificationService.verifyEmailToken(id, token);
+
+        if (result.success) {
+            res.render('auth/verify-result', {
+                title: 'Email Verification',
+                success: true,
+                message: 'Email verified successfully! You can now log in to your account.'
+            });
+        } else {
+            res.render('auth/verify-result', {
+                title: 'Email Verification',
+                success: false,
+                message: result.error
+            });
+        }
+
+    } catch (error) {
+        console.error('Email verification error:', error);
+        res.render('auth/verify-result', {
+            title: 'Email Verification',
+            success: false,
+            message: 'An error occurred during email verification. Please try again.'
+        });
+    }
+});
+
+// Resend verification email route
+router.post('/resend-verification', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.json({
+                success: false,
+                error: 'Email is required'
+            });
+        }
+
+        // Find user by email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.json({
+                success: false,
+                error: 'No account found with this email address'
+            });
+        }
+
+        if (user.isEmailVerified) {
+            return res.json({
+                success: false,
+                error: 'Email is already verified'
+            });
+        }
+
+        // Send verification email
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const result = await emailVerificationService.sendVerificationEmail(user, baseUrl);
+
+        res.json(result);
+
+    } catch (error) {
+        console.error('Resend verification error:', error);
+        res.json({
+            success: false,
+            error: 'Failed to resend verification email'
+        });
+    }
+});
+
+// Check verification status
+router.get('/verification-status/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        const user = await User.findById(userId).select('isEmailVerified email');
+        if (!user) {
+            return res.json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            isVerified: user.isEmailVerified,
+            email: user.email
+        });
+
+    } catch (error) {
+        console.error('Verification status error:', error);
+        res.json({
+            success: false,
+            error: 'Failed to check verification status'
+        });
+    }
+});
+
+// Test email endpoint (for debugging SMTP configuration)
+router.post('/test-email', async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.json({
+                success: false,
+                error: 'Email address is required'
+            });
+        }
+
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.json({
+                success: false,
+                error: 'Invalid email format'
+            });
+        }
+
+        const result = await emailVerificationService.sendTestEmail(email);
+        res.json(result);
+
+    } catch (error) {
+        console.error('Test email error:', error);
+        res.json({
+            success: false,
+            error: 'Failed to send test email'
         });
     }
 });

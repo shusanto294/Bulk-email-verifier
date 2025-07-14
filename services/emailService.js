@@ -92,6 +92,76 @@ class EmailService {
         }
     }
 
+    async sendSupportNotification(supportData) {
+        try {
+            const {
+                name,
+                email,
+                subject,
+                message,
+                submittedAt,
+                userAgent,
+                ip
+            } = supportData;
+
+            const mailOptions = {
+                from: process.env.EMAIL_USER || 'your-email@your-domain.com',
+                to: 'shusanto@bdwebguy.com',
+                subject: `Support Request: ${subject}`,
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
+                            <h2>🎧 New Support Request</h2>
+                        </div>
+                        
+                        <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px;">
+                            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                <h3 style="color: #667eea; margin-top: 0;">📧 Contact Information</h3>
+                                <p><strong>Name:</strong> ${name}</p>
+                                <p><strong>Email:</strong> <a href="mailto:${email}" style="color: #667eea;">${email}</a></p>
+                                <p><strong>Subject:</strong> ${subject}</p>
+                            </div>
+                            
+                            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                <h3 style="color: #667eea; margin-top: 0;">💬 Message</h3>
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 4px solid #667eea;">
+                                    <p style="white-space: pre-wrap; margin: 0;">${message}</p>
+                                </div>
+                            </div>
+                            
+                            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                <h3 style="color: #667eea; margin-top: 0;">🔍 Technical Details</h3>
+                                <p><strong>Submitted:</strong> ${submittedAt}</p>
+                                <p><strong>IP Address:</strong> ${ip}</p>
+                                <p><strong>User Agent:</strong> <small>${userAgent}</small></p>
+                            </div>
+                            
+                            <div style="text-align: center; margin-top: 30px;">
+                                <a href="mailto:${email}" style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin-right: 10px;">
+                                    📧 Reply to Customer
+                                </a>
+                                <a href="mailto:${email}?subject=Re: ${encodeURIComponent(subject)}&body=Hi ${encodeURIComponent(name)},%0A%0AThank you for contacting us." style="background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                                    ✉️ Quick Reply
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 12px;">
+                            <p>This email was sent from your Bulk Email Verifier support system</p>
+                            <p>🌐 <a href="${process.env.APP_URL || 'http://localhost:3001'}/support" style="color: #667eea;">Visit Support Page</a></p>
+                        </div>
+                    </div>
+                `
+            };
+
+            const result = await this.transporter.sendMail(mailOptions);
+            return { success: true, messageId: result.messageId };
+        } catch (error) {
+            console.error('Support email notification error:', error);
+            throw new Error('Failed to send support notification email');
+        }
+    }
+
     async sendWelcomeEmail(userEmail, username) {
         try {
             const mailOptions = {

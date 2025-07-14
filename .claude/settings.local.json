@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm start)"
+      "Bash(npm start)",
+      "Bash(node:*)",
+      "Bash(del test-data.js)",
+      "Bash(rm:*)",
+      "Bash(npm test)",
+      "Bash(npm run:*)",
+      "Bash(timeout 10 npm start)",
+      "Bash(timeout 15 npm start)"
     ],
     "deny": []
   }

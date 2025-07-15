@@ -713,6 +713,17 @@
             box-shadow: var(--shadow-sm);
         }
 
+        .footer-links{
+            display: flex;
+            column-gap: 20px;
+            row-gap: 20px;
+            justify-content: center;
+        }
+
+        .footer-links a{
+            color: #000 !Important;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .pricing-grid {
@@ -756,18 +767,14 @@
                 padding: 1rem 2rem;
                 font-size: 1rem;
             }
+
+            .footer-links{
+                flex-direction: column;
+            }
         }
 
-        .footer-links{
-            display: flex;
-            column-gap: 20px;
-            row-gap: 20px;
-            justify-content: center;
-        }
 
-        .footer-links a{
-            color: #000 !Important;
-        }
+        
     </style>
     <%- include('../partials/head') %>
 </head>

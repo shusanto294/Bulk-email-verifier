@@ -101,8 +101,8 @@ router.post('/upload-file', requireEmailVerified, upload.single('csvFile'), asyn
                 .on('error', reject);
         });
 
-        // Check if user has enough credits
-        if (req.user.credits < emailCount) {
+        // Check if user has enough credits (skip for admin users)
+        if (!req.user.isAdmin() && req.user.credits < emailCount) {
             // Delete uploaded file
             fs.unlinkSync(req.file.path);
             return res.status(402).json({ 

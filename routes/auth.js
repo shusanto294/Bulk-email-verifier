@@ -85,7 +85,8 @@ router.post('/register', requireGuest, async (req, res) => {
         const user = new User({
             username,
             email,
-            password
+            password,
+            role: 'customer' // Explicitly set customer role
         });
 
         await user.save();
@@ -307,6 +308,183 @@ router.get('/verification-status/:userId', async (req, res) => {
         res.json({
             success: false,
             error: 'Failed to check verification status'
+        });
+    }
+});
+
+// Forgot password page
+router.get('/forgot-password', requireGuest, (req, res) => {
+    res.render('auth/forgot-password', { 
+        title: 'Forgot Password',
+        error: req.query.error || null,
+        success: req.query.success || null
+    });
+});
+
+// Send password reset email
+router.post('/forgot-password', requireGuest, async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.render('auth/forgot-password', { 
+                title: 'Forgot Password',
+                error: 'Email address is required',
+                success: null
+            });
+        }
+
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.render('auth/forgot-password', { 
+                title: 'Forgot Password',
+                error: 'Invalid email format',
+                success: null
+            });
+        }
+
+        // Find user by email
+        const user = await User.findOne({ email });
+        
+        // Always show success message for security (don't reveal if email exists)
+        const successMessage = 'If an account with that email exists, we\'ve sent a password reset link to your email address.';
+        
+        if (user) {
+            // Send password reset email
+            const baseUrl = `${req.protocol}://${req.get('host')}`;
+            const result = await emailVerificationService.sendPasswordResetEmail(user, baseUrl);
+            
+            if (!result.success) {
+                return res.render('auth/forgot-password', { 
+                    title: 'Forgot Password',
+                    error: result.error,
+                    success: null
+                });
+            }
+        }
+
+        res.render('auth/forgot-password', { 
+            title: 'Forgot Password',
+            error: null,
+            success: successMessage
+        });
+
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.render('auth/forgot-password', { 
+            title: 'Forgot Password',
+            error: 'An error occurred. Please try again.',
+            success: null
+        });
+    }
+});
+
+// Reset password page
+router.get('/reset-password', requireGuest, async (req, res) => {
+    try {
+        const { token, id } = req.query;
+
+        if (!token || !id) {
+            return res.render('auth/reset-password', {
+                title: 'Reset Password',
+                error: 'Invalid password reset link. Please request a new one.',
+                success: null,
+                validToken: false
+            });
+        }
+
+        // Verify token
+        const result = await emailVerificationService.verifyPasswordResetToken(id, token);
+        
+        if (!result.success) {
+            return res.render('auth/reset-password', {
+                title: 'Reset Password',
+                error: result.error,
+                success: null,
+                validToken: false
+            });
+        }
+
+        res.render('auth/reset-password', {
+            title: 'Reset Password',
+            error: null,
+            success: null,
+            validToken: true,
+            token: token,
+            userId: id
+        });
+
+    } catch (error) {
+        console.error('Reset password page error:', error);
+        res.render('auth/reset-password', {
+            title: 'Reset Password',
+            error: 'An error occurred. Please try again.',
+            success: null,
+            validToken: false
+        });
+    }
+});
+
+// Process password reset
+router.post('/reset-password', requireGuest, async (req, res) => {
+    try {
+        const { token, userId, password, confirmPassword } = req.body;
+
+        if (!token || !userId || !password || !confirmPassword) {
+            return res.render('auth/reset-password', {
+                title: 'Reset Password',
+                error: 'All fields are required',
+                success: null,
+                validToken: true,
+                token: token,
+                userId: userId
+            });
+        }
+
+        if (password !== confirmPassword) {
+            return res.render('auth/reset-password', {
+                title: 'Reset Password',
+                error: 'Passwords do not match',
+                success: null,
+                validToken: true,
+                token: token,
+                userId: userId
+            });
+        }
+
+        if (password.length < 6) {
+            return res.render('auth/reset-password', {
+                title: 'Reset Password',
+                error: 'Password must be at least 6 characters long',
+                success: null,
+                validToken: true,
+                token: token,
+                userId: userId
+            });
+        }
+
+        // Reset password
+        const result = await emailVerificationService.resetUserPassword(userId, token, password);
+        
+        if (!result.success) {
+            return res.render('auth/reset-password', {
+                title: 'Reset Password',
+                error: result.error,
+                success: null,
+                validToken: false
+            });
+        }
+
+        res.redirect('/auth/login?success=Password reset successfully! You can now log in with your new password.');
+
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.render('auth/reset-password', {
+            title: 'Reset Password',
+            error: 'An error occurred. Please try again.',
+            success: null,
+            validToken: false
         });
     }
 });

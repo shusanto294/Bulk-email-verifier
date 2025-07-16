@@ -42,8 +42,8 @@ async function verifyEmailBatch() {
 
                 const user = upload.userId;
                 
-                // Check if user has credits
-                if (user.credits <= 0) {
+                // Check if user has credits (skip for admin users)
+                if (!user.isAdmin() && user.credits <= 0) {
                     console.log(`User ${user.username} has no credits left. Skipping email verification.`);
                     // Mark remaining emails as invalid due to insufficient credits
                     email.status = 'invalid';
@@ -52,7 +52,8 @@ async function verifyEmailBatch() {
                     continue;
                 }
 
-                console.log(`Verifying email: ${email.email} for user: ${user.username} (Credits: ${user.credits})`);
+                const userRole = user.isAdmin() ? 'admin' : 'customer';
+                console.log(`Verifying email: ${email.email} for user: ${user.username} (Role: ${userRole}, Credits: ${user.credits})`);
                 
                 // Add 5-second timeout for verification
                 const result = await Promise.race([
@@ -80,15 +81,19 @@ async function verifyEmailBatch() {
                     console.log(`Email ${email.email} is ${result.exists ? 'valid' : 'invalid'}`);
                 }
 
-                // Deduct 1 credit for each email verification
-                try {
-                    await user.deductCredits(1);
-                    console.log(`Deducted 1 credit from user ${user.username}. Remaining credits: ${user.credits}`);
-                } catch (creditError) {
-                    console.error(`Error deducting credits for user ${user.username}:`, creditError);
-                    // If credit deduction fails, mark email as invalid
-                    email.status = 'invalid';
-                    email.verificationDetails = { error: 'Credit deduction failed' };
+                // Deduct 1 credit for each email verification (skip for admin users)
+                if (!user.isAdmin()) {
+                    try {
+                        await user.deductCredits(1);
+                        console.log(`Deducted 1 credit from user ${user.username}. Remaining credits: ${user.credits}`);
+                    } catch (creditError) {
+                        console.error(`Error deducting credits for user ${user.username}:`, creditError);
+                        // If credit deduction fails, mark email as invalid
+                        email.status = 'invalid';
+                        email.verificationDetails = { error: 'Credit deduction failed' };
+                    }
+                } else {
+                    console.log(`Admin user ${user.username} - No credits deducted`);
                 }
 
                 await email.save();

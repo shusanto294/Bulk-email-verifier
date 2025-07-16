@@ -432,6 +432,210 @@ class EmailVerificationService {
     }
 
     /**
+     * Send password reset email
+     */
+    async sendPasswordResetEmail(user, baseUrl) {
+        try {
+            // Check if user can receive password reset email
+            const canReceive = user.canReceivePasswordResetEmail();
+            if (!canReceive.canSend) {
+                throw new Error(canReceive.reason);
+            }
+
+            // Generate password reset token
+            const token = user.generatePasswordResetToken();
+            
+            // Increment password reset attempts
+            user.passwordResetAttempts += 1;
+            await user.save();
+
+            // Create password reset URL
+            const resetUrl = `${baseUrl}/auth/reset-password?token=${token}&id=${user._id}`;
+
+            // Email template
+            const mailOptions = {
+                from: {
+                    name: 'Bulk Email Verifier',
+                    address: process.env.EMAIL_USER
+                },
+                to: user.email,
+                subject: 'Password Reset Request - Bulk Email Verifier',
+                html: this.getPasswordResetEmailTemplate(user.username, resetUrl, token),
+                replyTo: process.env.EMAIL_USER
+            };
+
+            // Send email
+            const info = await this.transporter.sendMail(mailOptions);
+            
+            console.log('Password reset email sent:', info.messageId);
+            return {
+                success: true,
+                messageId: info.messageId,
+                message: 'Password reset email sent successfully'
+            };
+
+        } catch (error) {
+            console.error('Error sending password reset email:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * Get password reset email template
+     */
+    getPasswordResetEmailTemplate(username, resetUrl, token) {
+        return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Password Reset Request</title>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+                .button { display: inline-block; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; }
+                .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+                .security-notice { background: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin: 20px 0; color: #721c24; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🔒 Password Reset Request</h1>
+                </div>
+                <div class="content">
+                    <h2>Hello ${username},</h2>
+                    <p>We received a request to reset the password for your <strong>Bulk Email Verifier</strong> account.</p>
+                    
+                    <div style="text-align: center;">
+                        <a href="${resetUrl}" class="button">Reset Password</a>
+                    </div>
+                    
+                    <p>If the button above doesn't work, you can copy and paste this link into your browser:</p>
+                    <p style="word-break: break-all; background: #f1f1f1; padding: 10px; border-radius: 5px;">
+                        ${resetUrl}
+                    </p>
+                    
+                    <div class="warning">
+                        <strong>⚠️ Important:</strong>
+                        <ul>
+                            <li>This password reset link will expire in <strong>1 hour</strong></li>
+                            <li>You can only use this link once</li>
+                            <li>If you didn't request this password reset, please ignore this email</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="security-notice">
+                        <strong>🛡️ Security Notice:</strong>
+                        <p>If you didn't request this password reset, someone may be trying to access your account. Please consider:</p>
+                        <ul>
+                            <li>Checking your account for any suspicious activity</li>
+                            <li>Enabling two-factor authentication if available</li>
+                            <li>Using a strong, unique password</li>
+                        </ul>
+                    </div>
+                    
+                    <p>For security reasons, we recommend that you:</p>
+                    <ul>
+                        <li>✅ Use a strong password with at least 8 characters</li>
+                        <li>✅ Include uppercase and lowercase letters, numbers, and symbols</li>
+                        <li>✅ Don't reuse passwords from other accounts</li>
+                        <li>✅ Keep your password confidential</li>
+                    </ul>
+                </div>
+                <div class="footer">
+                    <p>© 2024 Bulk Email Verifier. All rights reserved.</p>
+                    <p>This email was sent from ${process.env.EMAIL_USER}. If you received this in error, please ignore it.</p>
+                    <p>For support, contact us at ${process.env.EMAIL_USER}</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        `;
+    }
+
+    /**
+     * Verify password reset token
+     */
+    async verifyPasswordResetToken(userId, token) {
+        try {
+            const user = await User.findById(userId);
+            
+            if (!user) {
+                return {
+                    success: false,
+                    error: 'User not found'
+                };
+            }
+
+            if (!user.verifyPasswordResetToken(token)) {
+                return {
+                    success: false,
+                    error: 'Invalid or expired password reset token'
+                };
+            }
+
+            return {
+                success: true,
+                user: user,
+                message: 'Password reset token is valid'
+            };
+
+        } catch (error) {
+            console.error('Error verifying password reset token:', error);
+            return {
+                success: false,
+                error: 'Failed to verify password reset token'
+            };
+        }
+    }
+
+    /**
+     * Reset user password
+     */
+    async resetUserPassword(userId, token, newPassword) {
+        try {
+            const user = await User.findById(userId);
+            
+            if (!user) {
+                return {
+                    success: false,
+                    error: 'User not found'
+                };
+            }
+
+            if (!user.verifyPasswordResetToken(token)) {
+                return {
+                    success: false,
+                    error: 'Invalid or expired password reset token'
+                };
+            }
+
+            // Reset the password
+            await user.resetPassword(newPassword);
+
+            return {
+                success: true,
+                message: 'Password reset successfully'
+            };
+
+        } catch (error) {
+            console.error('Error resetting user password:', error);
+            return {
+                success: false,
+                error: 'Failed to reset password'
+            };
+        }
+    }
+
+    /**
      * Send test email (for debugging)
      */
     async sendTestEmail(toEmail) {

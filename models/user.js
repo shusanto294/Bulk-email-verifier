@@ -55,6 +55,27 @@ const userSchema = new mongoose.Schema({
     lastVerificationEmailSent: {
         type: Date,
         default: null
+    },
+    passwordResetToken: {
+        type: String,
+        default: null
+    },
+    passwordResetExpires: {
+        type: Date,
+        default: null
+    },
+    passwordResetAttempts: {
+        type: Number,
+        default: 0
+    },
+    lastPasswordResetEmailSent: {
+        type: Date,
+        default: null
+    },
+    role: {
+        type: String,
+        enum: ['customer', 'admin'],
+        default: 'customer'
     }
 }, {
     timestamps: true
@@ -170,6 +191,90 @@ userSchema.methods.canReceiveVerificationEmail = function() {
     }
     
     return { canSend: true };
+};
+
+// Method to generate password reset token
+userSchema.methods.generatePasswordResetToken = function() {
+    // Generate a secure random token
+    const token = crypto.randomBytes(32).toString('hex');
+    
+    // Set the token and expiration (1 hour)
+    this.passwordResetToken = token;
+    this.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    this.lastPasswordResetEmailSent = new Date();
+    
+    return token;
+};
+
+// Method to verify password reset token
+userSchema.methods.verifyPasswordResetToken = function(token) {
+    if (!this.passwordResetToken || !this.passwordResetExpires) {
+        return false;
+    }
+    
+    // Check if token has expired
+    if (Date.now() > this.passwordResetExpires.getTime()) {
+        return false;
+    }
+    
+    // Check if token matches
+    if (this.passwordResetToken !== token) {
+        return false;
+    }
+    
+    return true;
+};
+
+// Method to reset password
+userSchema.methods.resetPassword = async function(newPassword) {
+    this.password = newPassword;
+    this.passwordResetToken = null;
+    this.passwordResetExpires = null;
+    this.passwordResetAttempts = 0;
+    return this.save();
+};
+
+// Method to check if user can receive password reset email
+userSchema.methods.canReceivePasswordResetEmail = function() {
+    const now = new Date();
+    const cooldownPeriod = 5 * 60 * 1000; // 5 minutes cooldown
+    
+    // Check password reset attempts limit (max 5 per day)
+    if (this.passwordResetAttempts >= 5) {
+        const daysSinceLastAttempt = this.lastPasswordResetEmailSent ? 
+            (now - this.lastPasswordResetEmailSent) / (24 * 60 * 60 * 1000) : 1;
+        
+        if (daysSinceLastAttempt < 1) {
+            return { canSend: false, reason: 'Too many password reset attempts. Please try again tomorrow.' };
+        } else {
+            // Reset attempts after 24 hours
+            this.passwordResetAttempts = 0;
+        }
+    }
+    
+    // Check cooldown period
+    if (this.lastPasswordResetEmailSent) {
+        const timeSinceLastEmail = now - this.lastPasswordResetEmailSent;
+        if (timeSinceLastEmail < cooldownPeriod) {
+            const remainingTime = Math.ceil((cooldownPeriod - timeSinceLastEmail) / 60000);
+            return { 
+                canSend: false, 
+                reason: `Please wait ${remainingTime} minute(s) before requesting another password reset email.` 
+            };
+        }
+    }
+    
+    return { canSend: true };
+};
+
+// Method to check if user is admin
+userSchema.methods.isAdmin = function() {
+    return this.role === 'admin';
+};
+
+// Method to check if user is customer
+userSchema.methods.isCustomer = function() {
+    return this.role === 'customer';
 };
 
 module.exports = mongoose.model('User', userSchema); 

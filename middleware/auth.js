@@ -59,11 +59,16 @@ const getCurrentUser = async (req, res, next) => {
     next();
 };
 
-// Middleware to check if user has sufficient credits
+// Middleware to check if user has sufficient credits (skip for admin users)
 const requireCredits = (amount = 1) => {
     return async (req, res, next) => {
         if (!req.user) {
             return res.redirect('/auth/login');
+        }
+        
+        // Skip credit check for admin users
+        if (req.user.isAdmin()) {
+            return next();
         }
         
         if (req.user.credits < amount) {

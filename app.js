@@ -76,9 +76,10 @@ app.use('/api', require('./routes/api'));
 // Home route - show homepage for all users (authenticated and non-authenticated)
 app.get('/', (req, res) => {
     res.render('homepage', { 
-        title: 'Bulk Email Verifier - Professional Email Validation Service',
+        title: 'Professional Bulk Email Verifier - Validate & Verify Email Addresses',
         user: req.user || null,
-        activePage: 'home'
+        activePage: 'home',
+        currentPath: '/'
     });
 });
 
@@ -117,6 +118,100 @@ app.post('/api/validate-email', async (req, res) => {
         console.error('Email validation error:', error);
         res.json({ valid: false, message: 'An error occurred while validating the email' });
     }
+});
+
+// Sitemap route
+app.get('/sitemap.xml', (req, res) => {
+    const currentDate = new Date().toISOString().split('T')[0];
+    const baseUrl = process.env.BASE_URL || 'https://bulk-email-verifier.bdwebguy.com';
+    
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage -->
+  <url>
+    <loc>${baseUrl}/</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Main Application Pages -->
+  <url>
+    <loc>${baseUrl}/dashboard</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>${baseUrl}/upload</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>${baseUrl}/payments/buy-credits</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>${baseUrl}/support</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <!-- Authentication Pages -->
+  <url>
+    <loc>${baseUrl}/auth/login</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>${baseUrl}/auth/register</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <!-- Legal Pages -->
+  <url>
+    <loc>${baseUrl}/legal/terms-of-service</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <url>
+    <loc>${baseUrl}/legal/privacy-policy</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <url>
+    <loc>${baseUrl}/legal/refund-policy</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <!-- Payment Pages -->
+  <url>
+    <loc>${baseUrl}/payments/history</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+</urlset>`;
+    
+    res.type('application/xml');
+    res.send(sitemap);
 });
 
 // Find available port starting from 3000

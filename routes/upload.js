@@ -63,12 +63,13 @@ router.get('/', requireEmailVerified, async (req, res) => {
         }));
         
         res.render('upload', { 
-            title: 'Upload',
+            title: 'Upload CSV File for Bulk Email Verification',
             activePage: 'upload',
             uploads: uploadsWithStatus,
             user: req.user,
             success: req.query.success || null,
-            error: req.query.error || null
+            error: req.query.error || null,
+            currentPath: '/upload'
         });
     } catch (err) {
         console.error(err);

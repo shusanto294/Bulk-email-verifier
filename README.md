@@ -74,7 +74,7 @@ npm start
 
 1. Sign up for a NOWPayments account at https://nowpayments.io
 2. Get your API key from the dashboard
-3. Set up webhook URL: `https://yourdomain.com/payments/webhook`
+3. Set up webhook URL: `https://bulk-email-verifier.bdwebguy.com/payments/webhook`
 4. Configure webhook secret in your NOWPayments dashboard
 5. Add the API key and webhook secret to your `.env` file
 

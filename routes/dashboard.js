@@ -69,8 +69,9 @@ router.get('/', requireEmailVerified, async (req, res) => {
         }).sort({ isDefault: -1, lastUsed: -1 });
 
         res.render('dashboard', { 
-            title: 'Dashboard',
+            title: 'Email Verification Dashboard - Track Your Bulk Email Verifier Results',
             activePage: 'dashboard',
+            currentPath: '/dashboard',
             user: req.user,
             uploads: uploadsWithStatus,
             recentPayments: recentPayments,

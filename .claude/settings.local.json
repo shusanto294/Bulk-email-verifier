@@ -8,7 +8,13 @@
       "Bash(npm test)",
       "Bash(npm run:*)",
       "Bash(timeout 10 npm start)",
-      "Bash(timeout 15 npm start)"
+      "Bash(timeout 15 npm start)",
+      "Bash(curl:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(wc:*)",
+      "Bash(file:*)",
+      "Bash(cp:*)"
     ],
     "deny": []
   }

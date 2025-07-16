@@ -15,8 +15,9 @@ router.get('/buy-credits', requireEmailVerified, async (req, res) => {
         const savedPaymentMethods = savedMethodsResult.success ? savedMethodsResult.paymentMethods : [];
         
         res.render('payments/buy-credits', {
-            title: 'Buy Credits',
+            title: 'Buy Credits for Bulk Email Verification - Affordable Email Validation Packages',
             activePage: 'buy-credits',
+            currentPath: '/payments/buy-credits',
             user: req.user,
             paymentMethods,
             creditPackages,

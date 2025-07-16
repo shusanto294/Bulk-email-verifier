@@ -14,8 +14,9 @@ router.get('/', (req, res) => {
     delete req.session.flashError;
     
     res.render('support', { 
-        title: 'Support',
+        title: 'Support - Get Help with Bulk Email Verification',
         activePage: 'support',
+        currentPath: '/support',
         user: req.user || null,
         success: success || null,
         error: error || null

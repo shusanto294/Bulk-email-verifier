@@ -2,6 +2,12 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const User = require('./models/user');
 
+// Admin user configuration from environment variables
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@bulk-email-verifier.bdwebguy.com';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123456';
+const ADMIN_CREDITS = process.env.ADMIN_CREDITS || 999999999;
+
 const createAdminUser = async () => {
     try {
         // Connect to MongoDB
@@ -11,8 +17,8 @@ const createAdminUser = async () => {
         // Check if admin user already exists
         const existingAdmin = await User.findOne({ 
             $or: [
-                { email: 'verify@bdwebguy.com' },
-                { username: 'admin' }
+                { email: ADMIN_EMAIL },
+                { username: ADMIN_USERNAME }
             ]
         });
 
@@ -26,10 +32,10 @@ const createAdminUser = async () => {
 
         // Create admin user with unlimited credits
         const adminUser = new User({
-            username: 'admin',
-            email: 'verify@bdwebguy.com',
-            password: 'admin123456', // Change this to a secure password
-            credits: 999999999, // Unlimited credits
+            username: ADMIN_USERNAME,
+            email: ADMIN_EMAIL,
+            password: ADMIN_PASSWORD,
+            credits: ADMIN_CREDITS, // Unlimited credits
             isActive: true,
             isEmailVerified: true,
             lastLogin: new Date(),
@@ -38,10 +44,10 @@ const createAdminUser = async () => {
 
         await adminUser.save();
         console.log('Admin user created successfully!');
-        console.log('Username: admin');
-        console.log('Email: verify@bdwebguy.com');
-        console.log('Password: admin123456');
-        console.log('Credits: 999999999 (unlimited)');
+        console.log('Username:', ADMIN_USERNAME);
+        console.log('Email:', ADMIN_EMAIL);
+        console.log('Password:', ADMIN_PASSWORD);
+        console.log('Credits:', ADMIN_CREDITS, '(unlimited)');
         console.log('');
         console.log('IMPORTANT: Please change the default password after first login!');
 

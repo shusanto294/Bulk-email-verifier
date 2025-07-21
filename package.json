@@ -6,14 +6,8 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "worker1": "node worker1.js",
-    "workers": "node workers.js",
-    "smart-workers": "node smart-workers.js",
-    "dynamic-worker": "node dynamic-worker.js",
-    "worker2": "node worker2.js",
-    "worker3": "node worker3.js",
-    "worker4": "node worker4.js",
-    "worker5": "node worker5.js"
+    "workers": "node safe-smart-workers.js",
+    "worker": "node safe-dynamic-worker.js"
   },
   "dependencies": {
     "@paddle/paddle-js": "^1.4.2",

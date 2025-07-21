@@ -227,7 +227,8 @@ router.get('/:id', requireEmailVerified, async (req, res) => {
         // Get counts from ALL emails, not just current page
         const verifiedCount = await Email.countDocuments({ 
             uploadId: upload._id, 
-            status: 'verified' 
+            status: 'verified',
+            isCatchAll: { $ne: true }
         });
         const invalidCount = await Email.countDocuments({ 
             uploadId: upload._id, 
@@ -289,7 +290,10 @@ router.get('/:id/download/:type', requireEmailVerified, async (req, res) => {
         }
 
         let query = { uploadId: id };
-        if (type === 'verified' || type === 'invalid' || type === 'pending') {
+        if (type === 'verified') {
+            query.status = type;
+            query.isCatchAll = { $ne: true };
+        } else if (type === 'invalid' || type === 'pending') {
             query.status = type;
         } else if (type === 'disposable') {
             query.isDisposable = true;

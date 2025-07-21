@@ -17,10 +17,13 @@ router.get('/register', requireGuest, (req, res) => {
 // Register user
 router.post('/register', requireGuest, async (req, res) => {
     try {
-        const { username, email, password, confirmPassword } = req.body;
+        const { email, password, confirmPassword } = req.body;
+        
+        // Generate username from email (part before @)
+        const username = email ? email.split('@')[0] : '';
 
         // Validation
-        if (!username || !email || !password || !confirmPassword) {
+        if (!email || !password || !confirmPassword) {
             return res.render('auth/register', { 
                 title: 'Register',
                 error: 'All fields are required',
@@ -67,23 +70,31 @@ router.post('/register', requireGuest, async (req, res) => {
             });
         }
 
-        // Check if user already exists
-        const existingUser = await User.findOne({
-            $or: [{ email }, { username }]
-        });
+        // Check if email already exists
+        const existingUser = await User.findOne({ email });
 
         if (existingUser) {
             return res.render('auth/register', { 
                 title: 'Register',
-                error: 'Username or email already exists',
+                error: 'Email already exists',
                 formData: req.body,
                 success: null
             });
         }
 
+        // Generate unique username from email
+        let finalUsername = username;
+        let counter = 1;
+        
+        // Check if username already exists, if so append numbers
+        while (await User.findOne({ username: finalUsername })) {
+            finalUsername = `${username}${counter}`;
+            counter++;
+        }
+
         // Create new user
         const user = new User({
-            username,
+            username: finalUsername,
             email,
             password,
             role: 'customer' // Explicitly set customer role
@@ -135,24 +146,30 @@ router.get('/login', requireGuest, (req, res) => {
 // Login user
 router.post('/login', requireGuest, async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { emailOrUsername, password } = req.body;
 
         // Validation
-        if (!email || !password) {
+        if (!emailOrUsername || !password) {
             return res.render('auth/login', { 
                 title: 'Login',
-                error: 'Email and password are required',
+                error: 'Email/Username and password are required',
                 formData: req.body,
                 success: null
             });
         }
 
-        // Find user
-        const user = await User.findOne({ email });
+        // Find user by email or username
+        const user = await User.findOne({
+            $or: [
+                { email: emailOrUsername },
+                { username: emailOrUsername }
+            ]
+        });
+        
         if (!user) {
             return res.render('auth/login', { 
                 title: 'Login',
-                error: 'Invalid email or password',
+                error: 'Invalid email/username or password',
                 formData: req.body,
                 success: null
             });
@@ -163,7 +180,7 @@ router.post('/login', requireGuest, async (req, res) => {
         if (!isMatch) {
             return res.render('auth/login', { 
                 title: 'Login',
-                error: 'Invalid email or password',
+                error: 'Invalid email/username or password',
                 formData: req.body,
                 success: null
             });

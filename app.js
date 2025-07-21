@@ -102,7 +102,10 @@ app.post('/api/validate-email', async (req, res) => {
         const { validate } = require('deep-email-validator');
         
         const result = await Promise.race([
-            validate(email),
+            validate({
+                email: email,
+                sender: process.env.SENDER_EMAIL || 'name@example.org'
+            }),
             new Promise((resolve) => 
                 setTimeout(() => resolve({ 
                     valid: false,

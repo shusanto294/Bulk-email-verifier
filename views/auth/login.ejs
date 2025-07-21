@@ -261,11 +261,12 @@
 
             <form method="POST" action="/auth/login">
                 <div class="mb-3">
-                    <label for="email" class="form-label">Email Address</label>
+                    <label for="emailOrUsername" class="form-label">Email Address or Username</label>
                     <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                        <input type="email" class="form-control" id="email" name="email" 
-                               value="<%= formData && formData.email ? formData.email : '' %>" required>
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" class="form-control" id="emailOrUsername" name="emailOrUsername" 
+                               value="<%= formData && formData.emailOrUsername ? formData.emailOrUsername : '' %>" 
+                               placeholder="Enter your email or username" required>
                     </div>
                 </div>
                 

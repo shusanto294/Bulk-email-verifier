@@ -57,7 +57,10 @@ async function verifyEmailBatch() {
                 
                 // Use deep-email-validator with 10-second timeout
                 const result = await Promise.race([
-                    validate(email.email),
+                    validate({
+                        email: email.email,
+                        sender: process.env.SENDER_EMAIL || 'name@example.org'
+                    }),
                     new Promise((resolve) => 
                         setTimeout(() => resolve({ 
                             valid: false,

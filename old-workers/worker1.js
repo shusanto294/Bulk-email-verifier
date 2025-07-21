@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const { validate } = require('deep-email-validator');
-const Email = require('./models/email');
-const Upload = require('./models/upload');
-const User = require('./models/user');
+const Email = require('../models/email');
+const Upload = require('../models/upload');
+const User = require('../models/user');
 require('dotenv').config();
 
 // Database connection

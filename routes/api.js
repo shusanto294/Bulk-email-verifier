@@ -23,6 +23,20 @@ router.get('/uploads/:id/status', requireEmailVerified, async (req, res) => {
             uploadId: upload._id,
             status: 'pending'
         });
+        
+        // New deep-email-validator statistics
+        const disposableCount = await Email.countDocuments({ 
+            uploadId: upload._id,
+            isDisposable: true
+        });
+        const catchAllCount = await Email.countDocuments({ 
+            uploadId: upload._id,
+            isCatchAll: true
+        });
+        const typoCount = await Email.countDocuments({ 
+            uploadId: upload._id,
+            hasTypo: true
+        });
 
         res.json({
             success: true,
@@ -30,7 +44,10 @@ router.get('/uploads/:id/status', requireEmailVerified, async (req, res) => {
                 total: totalCount,
                 verified: verifiedCount,
                 invalid: invalidCount,
-                pending: pendingCount
+                pending: pendingCount,
+                disposable: disposableCount,
+                catchAll: catchAllCount,
+                typo: typoCount
             }
         });
     } catch (err) {

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const emailExistence = require('email-existence');
+const { validate } = require('deep-email-validator');
 const Email = require('./models/email');
 const Upload = require('./models/upload');
 const User = require('./models/user');
@@ -12,8 +12,8 @@ mongoose.connect(process.env.MONGODB_URI)
 
 async function verifyEmailBatch() {
     try {
-        // Find up to 10 pending emails at a time (reduced for better credit management)
-        const emails = await Email.find({ status: 'pending' }).limit(10);
+        // Find up to 100 pending emails at a time (reduced for better credit management)
+        const emails = await Email.find({ status: 'pending' }).limit(100);
         
         if (emails.length === 0) {
             console.log('No pending emails found. Waiting for new emails...');
@@ -55,30 +55,55 @@ async function verifyEmailBatch() {
                 const userRole = user.isAdmin() ? 'admin' : 'customer';
                 console.log(`Verifying email: ${email.email} for user: ${user.username} (Role: ${userRole}, Credits: ${user.credits})`);
                 
-                // Add 5-second timeout for verification
+                // Use deep-email-validator with 10-second timeout
                 const result = await Promise.race([
-                    new Promise((resolve) => {
-                        emailExistence.check(email.email, (error, exists) => {
-                            resolve({ error, exists });
-                        });
-                    }),
+                    validate(email.email),
                     new Promise((resolve) => 
                         setTimeout(() => resolve({ 
-                            error: new Error('Verification timeout (5s)'),
-                            exists: false 
-                        }), 5000)
+                            valid: false,
+                            reason: 'timeout',
+                            validators: {}
+                        }), 10000)
                     )
                 ]);
 
-                if (result.error) {
-                    console.error(`Error verifying ${email.email}:`, result.error);
+                // Log full response data from verifier package
+                console.log(`Full verifier response for ${email.email}:`, JSON.stringify(result, null, 2));
+
+                if (result.reason === 'timeout') {
+                    console.error(`Timeout verifying ${email.email}`);
                     email.status = 'invalid';
-                    email.verificationDetails = { error: result.error.message };
+                    email.verificationDetails = { 
+                        error: 'Verification timeout (10s)',
+                        timeout: true
+                    };
                 } else {
-                    email.status = result.exists ? 'verified' : 'invalid';
-                    email.verificationDetails = { exists: result.exists };
+                    email.status = result.valid ? 'verified' : 'invalid';
+                    
+                    // Store comprehensive validation data in both old and new format
+                    email.verificationDetails = {
+                        valid: result.valid,
+                        reason: result.reason,
+                        disposable: result.validators?.disposable?.valid === false,
+                        typo: result.validators?.typo?.valid === false,
+                        mx: result.validators?.mx || {},
+                        smtp: result.validators?.smtp || {},
+                        regex: result.validators?.regex || {},
+                        catchAll: result.validators?.mx?.valid && result.validators?.smtp?.valid === false,
+                        rawResult: result
+                    };
+                    
+                    // Store in new schema fields for easier querying
+                    email.isDisposable = result.validators?.disposable?.valid === false;
+                    email.hasTypo = result.validators?.typo?.valid === false;
+                    email.mxValid = result.validators?.mx?.valid || false;
+                    email.smtpValid = result.validators?.smtp?.valid || false;
+                    email.regexValid = result.validators?.regex?.valid || false;
+                    email.isCatchAll = result.validators?.mx?.valid && result.validators?.smtp?.valid === false;
+                    email.validationReason = result.reason;
+                    
                     email.verifiedAt = new Date();
-                    console.log(`Email ${email.email} is ${result.exists ? 'valid' : 'invalid'}`);
+                    console.log(`Email ${email.email} is ${result.valid ? 'valid' : 'invalid'} - Reason: ${result.reason || 'N/A'}`);
                 }
 
                 // Deduct 1 credit for each email verification (skip for admin users)

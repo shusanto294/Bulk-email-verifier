@@ -25,6 +25,35 @@ const emailSchema = new mongoose.Schema({
         type: Object,
         default: null
     },
+    // New fields for deep-email-validator data
+    isDisposable: {
+        type: Boolean,
+        default: false
+    },
+    hasTypo: {
+        type: Boolean,
+        default: false
+    },
+    mxValid: {
+        type: Boolean,
+        default: false
+    },
+    smtpValid: {
+        type: Boolean,
+        default: false
+    },
+    regexValid: {
+        type: Boolean,
+        default: false
+    },
+    isCatchAll: {
+        type: Boolean,
+        default: false
+    },
+    validationReason: {
+        type: String,
+        default: null
+    },
     csvData: {
         type: mongoose.Schema.Types.Mixed,
         default: {}

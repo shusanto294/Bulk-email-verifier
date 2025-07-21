@@ -30,6 +30,18 @@
                 </div>
                 <div class="col-lg-3 col-md-6">
                     <div class="credit-display">
+                        <div style="font-weight: 600; color: white; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;"><i class="fas fa-filter me-2"></i>Catch-All</div>
+                        <div style="font-size: 2.5rem; font-weight: 700; margin: 1rem 0; line-height: 1; color: white;"><%= stats.catchAll || 0 %></div>
+                        <% if ((stats.catchAll || 0) > 0) { %>
+                            <a href="/upload/<%= upload._id %>/download/catch-all" class="btn btn-outline-light btn-sm">
+                                <i class="fas fa-download me-1"></i>Download Catch-All
+                            </a>
+                        <% } %>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6">
+                    <div class="credit-display">
                         <div style="font-weight: 600; color: white; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;"><i class="fas fa-times-circle me-2"></i>Invalid</div>
                         <div style="font-size: 2.5rem; font-weight: 700; margin: 1rem 0; line-height: 1; color: white;"><%= stats.invalid %></div>
                         <% if (stats.invalid > 0) { %>
@@ -39,17 +51,7 @@
                         <% } %>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6">
-                    <div class="credit-display">
-                        <div style="font-weight: 600; color: white; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;"><i class="fas fa-clock me-2"></i>Pending</div>
-                        <div style="font-size: 2.5rem; font-weight: 700; margin: 1rem 0; line-height: 1; color: white;"><%= stats.pending %></div>
-                        <% if (stats.pending > 0) { %>
-                            <a href="/upload/<%= upload._id %>/download/pending" class="btn btn-outline-light btn-sm">
-                                <i class="fas fa-download me-1"></i>Download Pending
-                            </a>
-                        <% } %>
-                    </div>
-                </div>
+
             </div>
         </div>
 

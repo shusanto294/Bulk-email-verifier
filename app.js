@@ -98,21 +98,42 @@ app.post('/api/validate-email', async (req, res) => {
             return res.json({ valid: false, message: 'Invalid email format' });
         }
 
-        // Use email-existence package to check if email exists
-        const emailExistence = require('email-existence');
+        // Use deep-email-validator package with timeout
+        const { validate } = require('deep-email-validator');
         
-        emailExistence.check(email, (error, response) => {
-            if (error) {
-                console.error('Email validation error:', error);
-                return res.json({ valid: false, message: 'Unable to verify email at this time' });
+        const result = await Promise.race([
+            validate(email),
+            new Promise((resolve) => 
+                setTimeout(() => resolve({ 
+                    valid: false,
+                    reason: 'timeout',
+                    validators: {}
+                }), 8000)
+            )
+        ]);
+
+        if (result.reason === 'timeout') {
+            return res.json({ 
+                valid: false, 
+                message: 'Email verification timed out. Please try again.' 
+            });
+        }
+
+        const responseData = {
+            valid: result.valid,
+            message: result.valid ? 'Email address is valid and exists' : `Email is invalid: ${result.reason || 'Unknown reason'}`,
+            details: {
+                reason: result.reason,
+                disposable: result.validators?.disposable?.valid === false,
+                typo: result.validators?.typo?.valid === false,
+                mx: result.validators?.mx?.valid || false,
+                smtp: result.validators?.smtp?.valid || false,
+                regex: result.validators?.regex?.valid || false,
+                catchAll: result.validators?.mx?.valid && result.validators?.smtp?.valid === false
             }
-            
-            if (response) {
-                res.json({ valid: true, message: 'Email address is valid and exists' });
-            } else {
-                res.json({ valid: false, message: 'Email address does not exist' });
-            }
-        });
+        };
+
+        res.json(responseData);
         
     } catch (error) {
         console.error('Email validation error:', error);

@@ -237,6 +237,10 @@ router.get('/:id', requireEmailVerified, async (req, res) => {
             uploadId: upload._id, 
             status: 'pending' 
         });
+        const catchAllCount = await Email.countDocuments({ 
+            uploadId: upload._id, 
+            isCatchAll: true 
+        });
 
         // Only paginate the email list display
         const emails = await Email.find({ uploadId: upload._id })
@@ -248,7 +252,8 @@ router.get('/:id', requireEmailVerified, async (req, res) => {
             total: emails.length || 0,
             verified: verifiedCount || 0,
             invalid: invalidCount || 0,
-            pending: pendingCount || 0
+            pending: pendingCount || 0,
+            catchAll: catchAllCount || 0
         };
 
         res.render('upload-details', { 
@@ -272,7 +277,7 @@ router.get('/:id', requireEmailVerified, async (req, res) => {
 router.get('/:id/download/:type', requireEmailVerified, async (req, res) => {
     try {
         const { id, type } = req.params;
-        const validTypes = ['all', 'verified', 'invalid', 'pending'];
+        const validTypes = ['all', 'verified', 'invalid', 'pending', 'disposable', 'catch-all', 'typo', 'non-catch-all'];
         
         if (!validTypes.includes(type)) {
             return res.status(400).send('Invalid download type');
@@ -284,19 +289,46 @@ router.get('/:id/download/:type', requireEmailVerified, async (req, res) => {
         }
 
         let query = { uploadId: id };
-        if (type !== 'all') {
+        if (type === 'verified' || type === 'invalid' || type === 'pending') {
             query.status = type;
+        } else if (type === 'disposable') {
+            query.isDisposable = true;
+        } else if (type === 'catch-all') {
+            query.isCatchAll = true;
+        } else if (type === 'non-catch-all') {
+            query.isCatchAll = false;
+        } else if (type === 'typo') {
+            query.hasTypo = true;
         }
 
-        const emails = await Email.find(query).select('email status verifiedAt csvData -_id');
+        const emails = await Email.find(query).select('email status verifiedAt csvData isDisposable hasTypo mxValid smtpValid regexValid isCatchAll validationReason verificationDetails -_id');
         
-        // Generate CSV - include all csvData fields
-        let headers = new Set(['Email', 'Status', 'Verified At']);
+        // Generate CSV - include all validation data and csvData fields
+        let headers = new Set([
+            'Email', 
+            'Status', 
+            'Verified At', 
+            'Validation Reason',
+            'Is Disposable',
+            'Has Typo',
+            'MX Valid',
+            'SMTP Valid',
+            'Regex Valid',
+            'Is Catch-All'
+        ]);
+        
         const rows = emails.map(email => {
             const row = {
                 'Email': email.email,
                 'Status': email.status,
-                'Verified At': email.verifiedAt ? email.verifiedAt.toISOString() : ''
+                'Verified At': email.verifiedAt ? email.verifiedAt.toISOString() : '',
+                'Validation Reason': email.validationReason || '',
+                'Is Disposable': email.isDisposable ? 'Yes' : 'No',
+                'Has Typo': email.hasTypo ? 'Yes' : 'No',
+                'MX Valid': email.mxValid ? 'Yes' : 'No',
+                'SMTP Valid': email.smtpValid ? 'Yes' : 'No',
+                'Regex Valid': email.regexValid ? 'Yes' : 'No',
+                'Is Catch-All': email.isCatchAll ? 'Yes' : 'No'
             };
 
             // Add all csvData fields to headers and row

@@ -15,7 +15,8 @@
       "Bash(wc:*)",
       "Bash(file:*)",
       "Bash(cp:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(pkill:*)"
     ],
     "deny": []
   }

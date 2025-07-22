@@ -196,8 +196,8 @@
             const forceSandbox = '<%= process.env.PADDLE_SANDBOX %>' === 'true';
             const environment = (isProduction && !forceSandbox) ? 'production' : 'sandbox';
 
-            // Set environment first for Paddle Billing - explicitly using sandbox
-            Paddle.Environment.set('sandbox');
+            // Set environment based on configuration
+            Paddle.Environment.set(environment);
 
             // Initialize Paddle Billing with correct method
             Paddle.Initialize({
